@@ -1,0 +1,162 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap");
+
+:root {
+    /* Paleta unificada. Nota de unificacion de tonos casi-identicos:
+     se conservo el tono mas OSCURO de cada par, tal como se pidio. */
+    --color-primary: #c9a14a; /* unifica #C9A84C (uso mayoritario, ~63x) y #C9A14A (~8x): se eligio el mas oscuro */
+    --color-primary-rgb: 201, 161, 74;
+    --color-primary-light: #e8c97a; /* antes --gold-hover / --gold-light */
+    --color-primary-dark: #8b6914; /* antes --gold-dark */
+    --color-primary-gradient: #a9842f; /* extremo de degradado en tarjeta "signature" */
+
+    --color-bg: #080808; /* unifica #0D0D0D, #0A0A0A y #080808: se eligio el mas oscuro */
+    --color-bg-rgb: 8, 8, 8;
+    --color-surface-1: #141414; /* unifica #111111, #131313, #141414, #161616, #181818 (fondos de tarjetas/sidebar) */
+    --color-surface-2: #1a1a1a; /* unifica #1A1A1A, #1E1E1E, #202020 (inputs/paneles secundarios) */
+    --color-surface-3: #2a2a2a; /* divisores y elementos inactivos */
+
+    --color-white: #f5f0e8; /* unifica #F5F0E8 (uso mayoritario) y #F5F5F0 */
+    --color-white-rgb: 245, 240, 232;
+    --color-text-muted: rgba(245, 240, 232, 0.55);
+    --color-text-dim: rgba(245, 240, 232, 0.3);
+    --color-text-secondary: rgba(245, 240, 232, 0.7);
+    --color-text-faint: rgba(245, 240, 232, 0.15);
+
+    --color-danger: #e05252;
+    --color-danger-rgb: 224, 82, 82;
+    --color-success: #4caf50; /* unifica #4CAF50 y #4CAF80: se eligio el mas oscuro */
+    --color-success-rgb: 76, 175, 80;
+    --color-warning: #ff9800;
+    --color-info: #5599ff; /* unifica #5599FF y #6CA0E8: se eligio el mas oscuro */
+    --color-info-rgb: 85, 153, 255;
+    --color-accent-alert: #b3392f; /* acento puntual (indicador tipo "en vivo") */
+    --color-black-rgb: 0, 0, 0;
+
+    --border-color: rgba(var(--color-primary-rgb), 0.08);
+
+    --font-display: "Cormorant Garamond", serif;
+    --font-body: "Montserrat", sans-serif;
+}
+
+/* ==== Reset ==== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-white);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+::selection {
+    background: var(--color-primary);
+    color: var(--color-bg);
+}
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-primary-dark);
+    border-radius: 2px;
+}
+
+/* ==== Animaciones (usadas por components.css y layouts.css) ==== */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ringPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.1;
+    }
+}
+
+@keyframes particleFade {
+    0%,
+    100% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 0.6;
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes scrollAnim {
+    0%,
+    100% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scaleY(0.5);
+        opacity: 0.4;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes marqueeScroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}

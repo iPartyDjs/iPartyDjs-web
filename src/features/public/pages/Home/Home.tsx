@@ -1,7 +1,5 @@
 import { useCursor } from "@/core/hooks/useCursor";
-import Footer from "@/shared/Footer/Footer";
 import Marquee from "@/shared/Marquee/Marquee";
-import Navbar from "@/shared/Navbar/Navbar";
 import { useEffect } from "react";
 import Gallery from "../../components/Gallery/Gallery";
 import Hero from "../../components/Hero/Hero";
@@ -22,7 +20,7 @@ const Home = () => {
         <>
             <div className="cursor" />
             <div className="cursor-follower" />
-            <Navbar />
+            {/* <Navbar /> */}
             <main>
                 <Hero />
                 <Marquee />
@@ -33,7 +31,7 @@ const Home = () => {
                 <Gallery />
                 <Contact />
             </main>
-            <Footer />
+            {/* <Footer /> */}
         </>
     );
 };
