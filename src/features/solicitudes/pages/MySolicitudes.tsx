@@ -126,39 +126,6 @@ const MySolicitudes = () => {
 
     return (
         <div className="ms-layout">
-            {/* ── Sidebar ── */}
-            <aside className="ms-sidebar">
-                <div className="ms-logo">
-                    <span className="ms-logo-p">i</span>PartyDJs
-                </div>
-                <nav className="ms-nav">
-                    {[
-                        "Inicio",
-                        "Nueva solicitud",
-                        "Mis solicitudes",
-                        "Mis citas",
-                        "Mis reseñas",
-                    ].map((item) => (
-                        <a
-                            key={item}
-                            href="#"
-                            className={`ms-nav-item ${item === "Mis solicitudes" ? "active" : ""}`}
-                        >
-                            {item}
-                        </a>
-                    ))}
-                </nav>
-                <div className="ms-sidebar-footer">
-                    <div className="ms-user">
-                        <div className="ms-avatar ms-avatar-admin">AR</div>
-                        <div>
-                            <div className="ms-user-name">Arturo Ramírez</div>
-                            <div className="ms-user-role">SuperAdmin</div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
             {/* ── Main ── */}
             <main className="ms-main">
                 {/* Header */}

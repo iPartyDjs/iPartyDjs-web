@@ -496,7 +496,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 16px;
+    padding: 120px 16px;
     font-family: "Montserrat", sans-serif;
     position: relative;
     background:
@@ -826,7 +826,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 16px;
+    padding: 120px 48px;
     font-family: "Montserrat", sans-serif;
 }
 

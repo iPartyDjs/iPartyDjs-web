@@ -11,17 +11,17 @@ const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { label: "Inicio", sub: "Empieza aquí", href: "#inicio" },
-        { label: "Servicios", sub: "Lo que hacemos", href: "#servicios" },
-        { label: "Proceso", sub: "Cómo trabajamos", href: "#proceso" },
-        { label: "Galería", sub: "Nuestros eventos", href: "#galeria" },
-        { label: "Contacto", sub: "Hablemos", href: "#contacto" },
+        { label: "Inicio", sub: "Empieza aquí", href: "/#inicio" },
+        { label: "Servicios", sub: "Lo que hacemos", href: "/#servicios" },
+        { label: "Proceso", sub: "Cómo trabajamos", href: "/#proceso" },
+        { label: "Galería", sub: "Nuestros eventos", href: "/#galeria" },
+        { label: "Contacto", sub: "Hablemos", href: "/#contacto" },
     ];
 
     return (
         <>
             <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-                <a href="#inicio" className="navbar-logo">
+                <a href="/" className="navbar-logo">
                     <span className="logo-text">iParty</span>
                     <span className="logo-accent">DJs</span>
                 </a>
@@ -41,7 +41,7 @@ const Navbar = () => {
                 </div>
 
                 <div className="navbar-right">
-                    <a href="#contacto" className="btn-gold">
+                    <a href="/#contacto" className="btn-gold">
                         Cotizar Evento
                     </a>
                     <button

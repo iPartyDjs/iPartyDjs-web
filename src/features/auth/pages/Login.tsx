@@ -67,6 +67,11 @@ const Login = () => {
 
     return (
         <div className="login-page">
+            <div className="hero-bg">
+                <div className="hero-gradient" />
+                <div className="hero-grid" />
+            </div>
+
             <div className="login-card">
                 {/* Header */}
                 <div className="login-header">

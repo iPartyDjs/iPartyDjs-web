@@ -36,7 +36,7 @@ const Footer = () => {
                     <div className="footer-col">
                         <span className="footer-col-title">Acceso</span>
                         <a href="/Login">Iniciar sesión</a>
-                        <a href="/registro">Registrarse</a>
+                        <a href="/register">Registrarse</a>
                         <a href="/admin">Administración</a>
                     </div>
                 </div>

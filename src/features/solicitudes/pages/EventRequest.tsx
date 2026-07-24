@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 const TIPOS_EVENTO = [
     "Boda",
@@ -49,46 +48,6 @@ const EventRequest = () => {
 
     return (
         <div className="er-layout">
-            {/* ── Sidebar ── */}
-            <aside className="er-sidebar">
-                <div className="er-logo">
-                    <span className="er-logo-i">i</span>PartyDJs
-                </div>
-
-                <nav className="er-nav">
-                    <Link to="/dashboard" className="nav-item">
-                        {" "}
-                        Inicio{" "}
-                    </Link>
-                    <Link to="/MySolicitudes" className="er-nav-item">
-                        Mis solicitudes
-                    </Link>
-                    <Link to="/Mis-Citas" className="er-nav-item">
-                        Mis citas
-                    </Link>
-                    <Link to="/mis-reseñas" className="er-nav-item">
-                        Mis reseñas
-                    </Link>
-                </nav>
-
-                <div className="er-sidebar-bottom">
-                    <div className="er-user-card">
-                        <div className="er-avatar er-avatar-client">MG</div>
-                        <div>
-                            <div className="er-user-name">María G.</div>
-                            <div className="er-user-role">Cliente</div>
-                        </div>
-                    </div>
-                    <div className="er-user-card er-admin-card">
-                        <div className="er-avatar er-avatar-admin">AR</div>
-                        <div>
-                            <div className="er-user-name">Arturo Ramírez</div>
-                            <div className="er-user-role">SuperAdmin</div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
             {/* ── Main ── */}
             <main className="er-main">
                 {/* Header */}

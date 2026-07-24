@@ -1,66 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 export const ClientDashboard: React.FC = () => {
     return (
         <div className="dashboard-container">
-            {/* ── BARRA LATERAL (SIDEBAR) ── */}
-            <aside className="sidebar">
-                <div className="sidebar-logo">
-                    <img
-                        src="/logo-ipartydjs.png"
-                        alt="iPartyDjs"
-                        className="logo-img"
-                    />
-                    <span className="logo-text">iPartyDjs</span>
-                </div>
-
-                <div className="sidebar-section">
-                    <p className="er-eyebrow">PANEL CLIENTE</p>
-                    {/*}<p className="section-title">PANEL CLIENTE</p>{*/}
-
-                    <nav className="sidebar-nav">
-                        <Link to="/dashboard" className="nav-item">
-                            {" "}
-                            Inicio{" "}
-                        </Link>
-                        <Link to="/EventRequest" className="nav-item">
-                            {" "}
-                            Nueva solicitud{" "}
-                        </Link>
-                        <Link to="/MySolicitudes" className="nav-item">
-                            Mis solicitudes
-                        </Link>
-                        <Link to="/Mis-Citas" className="nav-item">
-                            Mis citas
-                        </Link>
-                        <Link to="/mis-reseñas" className="nav-item">
-                            Mis reseñas
-                        </Link>
-                    </nav>
-                </div>
-
-                <div className="sidebar-section">
-                    <p className="er-eyebrow">CUENTA</p>
-                    <nav className="sidebar-nav">
-                        <a href="#mi-perfil" className="nav-item">
-                            Mi perfil
-                        </a>
-                        <a href="#cerrar-sesion" className="nav-item logout">
-                            Cerrar sesión
-                        </a>
-                    </nav>
-                </div>
-
-                <div className="sidebar-footer">
-                    <div className="user-avatar">MG</div>
-                    <div className="user-info">
-                        <span className="user-name">María G.</span>
-                        <span className="user-role">cliente</span>
-                    </div>
-                </div>
-            </aside>
-
             {/* ── CONTENIDO PRINCIPAL ── */}
             <main className="main-content">
                 <header className="dashboard-header">

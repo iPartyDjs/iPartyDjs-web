@@ -85,51 +85,6 @@ const MisCitas = () => {
 
     return (
         <div className="mc-layout">
-            {/* ── Sidebar ── */}
-            <aside className="mc-sidebar">
-                <div className="mc-logo">
-                    <span>iParty</span>
-                    <span className="mc-logo-gold">DJs</span>
-                    <div className="mc-logo-sub">Portal del cliente</div>
-                </div>
-
-                <div className="mc-nav-group">
-                    <div className="mc-nav-label">Mi cuenta</div>
-                    {[
-                        "Dashboard",
-                        "Mis solicitudes",
-                        "Mis citas",
-                        "Mis eventos",
-                        "Mis reseñas",
-                    ].map((item) => (
-                        <a
-                            key={item}
-                            href="#"
-                            className={`mc-nav-item ${item === "Mis citas" ? "active" : ""}`}
-                        >
-                            {item}
-                        </a>
-                    ))}
-                </div>
-
-                <div className="mc-nav-group">
-                    <div className="mc-nav-label">Plataforma</div>
-                    {["Galería", "Contacto"].map((item) => (
-                        <a key={item} href="#" className="mc-nav-item">
-                            {item}
-                        </a>
-                    ))}
-                </div>
-
-                <div className="mc-sidebar-footer">
-                    <div className="mc-avatar">MR</div>
-                    <div>
-                        <div className="mc-user-name">Mariana Reyes</div>
-                        <div className="mc-user-role">Cliente</div>
-                    </div>
-                </div>
-            </aside>
-
             {/* ── Main ── */}
             <main className="mc-main">
                 {/* Header */}

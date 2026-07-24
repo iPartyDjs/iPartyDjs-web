@@ -38,20 +38,6 @@ const Hero = () => {
         });
     }, []);
 
-    /*
-    const particles = useMemo(
-        () =>
-            Array.from({ length: 20 }).map(() => ({
-                left: Math.random() * 100,
-                top: Math.random() * 100,
-                animationDelay: Math.random() * 6,
-                animationDuration: 4 + Math.random() * 6,
-                width: 1 + Math.random() * 2,
-                height: 1 + Math.random() * 2,
-            })),
-        [],
-    );
-*/
     return (
         <section id="inicio" className="hero">
             <div className="hero-bg">
@@ -114,7 +100,7 @@ const Hero = () => {
             </div>
 
             <div className="hero-badge">
-                <span>CDMX · MX</span>
+                <span>MORELOS · MX</span>
             </div>
         </section>
     );

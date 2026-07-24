@@ -56,6 +56,10 @@ body {
     color: var(--color-white);
     font-family: var(--font-body);
     overflow-x: hidden;
+}
+
+/* Habilita el cursor oculto solo en páginas públicas (añadir la clase `public-cursor` al body) */
+body.public-cursor {
     cursor: none;
 }
 
