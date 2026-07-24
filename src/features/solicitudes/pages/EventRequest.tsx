@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "@/styles/legacy/EventRequest.css";
 import { Link } from "react-router-dom";
 
 const TIPOS_EVENTO = [

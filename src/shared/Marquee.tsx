@@ -1,5 +1,3 @@
-import "@/styles/legacy/Marquee.css";
-
 const items = [
     "Bodas",
     "✦",

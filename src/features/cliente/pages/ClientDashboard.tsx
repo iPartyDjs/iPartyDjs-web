@@ -1,5 +1,4 @@
 import React from "react";
-import "@/styles/legacy/ClientDashboard.css";
 import { Link } from "react-router-dom";
 
 export const ClientDashboard: React.FC = () => {

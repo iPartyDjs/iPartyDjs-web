@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import "@/styles/legacy/Contact.css";
 
 const Contact = () => {
     const sectionRef = useRef<HTMLElement>(null);

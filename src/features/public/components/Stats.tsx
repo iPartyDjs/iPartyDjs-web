@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import "@/styles/legacy/Stats.css";
 
 const stats = [
     { value: 250, suffix: "+", label: "Eventos realizados" },

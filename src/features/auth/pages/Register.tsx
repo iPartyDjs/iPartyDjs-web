@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "@/styles/legacy/Register.css";
 import {
     RegisterClientSchema,
     type RegisterClientInput,

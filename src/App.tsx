@@ -3,13 +3,13 @@ import { Routes, Route } from "react-router-dom";
 import GuestLayout from "@/layouts/GuestLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
-import Home from "@/features/public/pages/Home/Home";
-import Login from "@/features/auth/pages/Login/Login";
-import Register from "@/features/auth/pages/Register/Register";
+import Home from "@/features/public/pages/Home";
+import Login from "@/features/auth/pages/Login";
+import Register from "@/features/auth/pages/Register";
 import { ClientDashboard } from "@/features/cliente/pages/ClientDashboard";
-import MySolicitudes from "@/features/solicitudes/pages/MySolicitudes/MySolicitudes";
-import EventRequest from "@/features/solicitudes/pages/EventRequest/EventRequest";
-import MisCitas from "@/features/citas/pages/MisCitas/Miscitas";
+import MySolicitudes from "@/features/solicitudes/pages/MySolicitudes";
+import EventRequest from "@/features/solicitudes/pages/EventRequest";
+import MisCitas from "@/features/citas/pages/Miscitas";
 
 function App() {
     return (

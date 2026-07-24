@@ -1,13 +1,13 @@
 import { useCursor } from "@/core/hooks/useCursor";
-import Marquee from "@/shared/Marquee/Marquee";
+import Marquee from "@/shared/Marquee";
 import { useEffect } from "react";
-import Gallery from "../../components/Gallery/Gallery";
-import Hero from "../../components/Hero/Hero";
-import Process from "../../components/Process/Process";
-import Services from "../../components/Services/Services";
-import Stats from "../../components/Stats/Stats";
-import WeddingExperiences from "../../components/WeddingExperiences/WeddingExperiences";
-import Contact from "../../components/Contact/Contact";
+import Gallery from "../components/Gallery";
+import Hero from "../components/Hero";
+import Process from "../components/Process";
+import Services from "../components/Services";
+import Stats from "../components/Stats";
+import WeddingExperiences from "../components/WeddingExperiences";
+import Contact from "../components/Contact";
 
 const Home = () => {
     useCursor();

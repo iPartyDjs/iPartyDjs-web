@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
-import "@/styles/legacy/WeddingExperiences.css";
 
 type CardKind = "base" | "signature" | "addon" | "guaranteed";
 

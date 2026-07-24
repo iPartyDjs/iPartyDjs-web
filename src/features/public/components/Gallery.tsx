@@ -1,6 +1,5 @@
 import { Image } from "@imagekit/react";
 import { useRef, useEffect, useState } from "react";
-import "@/styles/legacy/Gallery.css";
 
 const galleryItems = [
     { id: 1, label: "Boda de Ensueño", type: "Boda", color: "#1a1208" },

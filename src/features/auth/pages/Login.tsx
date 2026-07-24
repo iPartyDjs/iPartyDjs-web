@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "@/styles/legacy/Login.css";
 import { LoginSchema, type LoginInput } from "@ipartydjs/shared"; // Asegúrate que el tipo también se importe
 import { useNavigate } from "react-router-dom";
 

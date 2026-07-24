@@ -1,6 +1,4 @@
-// import { useEffect, useRef, useMemo } from "react";
 import { useEffect, useRef } from "react";
-import "@/styles/legacy/Hero.css";
 
 const particles = Array.from({ length: 20 }).map(() => ({
     left: Math.random() * 100,

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "@/styles/legacy/MisCitas.css";
 
 type FilterType = "Todas" | "Programadas" | "Realizadas" | "Canceladas";
 

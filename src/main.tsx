@@ -3,9 +3,6 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 
-import "@/styles/legacy/index.css";
-import "@/styles/legacy/App.css";
-
 import "@/styles/globals.css";
 import "@/styles/components.css";
 import "@/styles/layouts.css";

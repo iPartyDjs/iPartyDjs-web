@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "@/styles/legacy/MySolicitudes.css";
 
 type Status =
     | "Todas"
