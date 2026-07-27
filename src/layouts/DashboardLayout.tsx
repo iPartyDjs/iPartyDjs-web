@@ -108,7 +108,7 @@ export default function DashboardLayout() {
             </aside>
 
             <div className="dashboard-layout__main">
-                <main className="dashboard-layout__content">
+                <main className="flex flex-col flex-1 p-10">
                     <Outlet />
                 </main>
             </div>

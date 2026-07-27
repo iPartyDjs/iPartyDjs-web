@@ -49,7 +49,7 @@ const EventRequest = () => {
     return (
         <div className="er-layout">
             {/* ── Main ── */}
-            <main className="er-main">
+            <main className="">
                 {/* Header */}
                 <div className="er-header">
                     <span className="er-eyebrow">SOLICITUD DE EVENTO</span>

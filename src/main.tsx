@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import "@/styles/globals.css";
 import "@/styles/components.css";
 import "@/styles/layouts.css";
+import "@/styles/tailwind.css";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>

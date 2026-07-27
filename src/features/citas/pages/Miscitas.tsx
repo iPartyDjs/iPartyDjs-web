@@ -86,7 +86,7 @@ const MisCitas = () => {
     return (
         <div className="mc-layout">
             {/* ── Main ── */}
-            <main className="mc-main">
+            <main className="">
                 {/* Header */}
                 <div className="mc-header">
                     <h1 className="mc-title">Mis citas</h1>

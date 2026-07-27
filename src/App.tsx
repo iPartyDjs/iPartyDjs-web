@@ -6,10 +6,11 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import Home from "@/features/public/pages/Home";
 import Login from "@/features/auth/pages/Login";
 import Register from "@/features/auth/pages/Register";
-import { ClientDashboard } from "@/features/cliente/pages/ClientDashboard";
+import { ClientDashboard } from "@/features/dashboards/pages/ClientDashboard";
 import MySolicitudes from "@/features/solicitudes/pages/MySolicitudes";
 import EventRequest from "@/features/solicitudes/pages/EventRequest";
 import MisCitas from "@/features/citas/pages/Miscitas";
+import AdminDashboard from "./features/dashboards/pages/AdminDashboard";
 
 function App() {
     return (
@@ -24,6 +25,7 @@ function App() {
             {/* Rutas privadas */}
             <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<ClientDashboard />} />
+                <Route path="admin" element={<AdminDashboard />} />
                 <Route path="solicitudes" element={<MySolicitudes />} />
                 <Route path="solicitudes/nueva" element={<EventRequest />} />
                 <Route path="citas" element={<MisCitas />} />

@@ -1,10 +1,13 @@
 import React from "react";
 
 export const ClientDashboard: React.FC = () => {
+    {
+        /** <div className="dashboard-container"> */
+    }
     return (
-        <div className="dashboard-container">
-            {/* ── CONTENIDO PRINCIPAL ── */}
-            <main className="main-content">
+        <div className="">
+            {/* ── CONTENIDO PRINCIPAL  ── ms-main */}
+            <main className="">
                 <header className="dashboard-header">
                     <h1 className="welcome-title">Hola, María 👋</h1>
                     <p className="welcome-subtitle">

@@ -127,7 +127,7 @@ const MySolicitudes = () => {
     return (
         <div className="ms-layout">
             {/* ── Main ── */}
-            <main className="ms-main">
+            <main className="">
                 {/* Header */}
                 <div className="ms-topbar">
                     <div>
