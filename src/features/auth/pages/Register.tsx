@@ -3,6 +3,8 @@ import {
     RegisterClientSchema,
     type RegisterClientInput,
 } from "@ipartydjs/shared";
+import { useNavigate, Link } from "react-router-dom";
+import { useRegister } from "@/features/auth/hooks/useAuth";
 
 type PasswordStrength = "weak" | "medium" | "strong" | "";
 
@@ -33,6 +35,9 @@ const strengthColor: Record<PasswordStrength, string> = {
 };
 
 const Register = () => {
+    const navigate = useNavigate();
+    const registerMutation = useRegister();
+
     const [form, setForm] = useState<RegisterClientInput>({
         nombre: "",
         apellido: "",
@@ -52,6 +57,7 @@ const Register = () => {
     });
 
     const [submitted, setSubmitted] = useState(false);
+    const [serverErrorMessage, setServerErrorMessage] = useState<string | null>(null);
 
     const passwordStrength = getPasswordStrength(form.password);
 
@@ -74,6 +80,7 @@ const Register = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
+        setServerErrorMessage(null);
     };
 
     const handleBlur = (field: keyof RegisterClientInput) => {
@@ -83,14 +90,24 @@ const Register = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitted(true);
+        setServerErrorMessage(null);
 
         if (!validation.success) {
             return;
         }
 
-        // Aquí irá la llamada real al backend
-        console.log("Datos de registro:", form);
-        alert("¡Cuenta creada exitosamente! (Simulación)");
+        registerMutation.mutate(form, {
+            onSuccess: () => {
+                navigate("/login");
+            },
+            onError: (error: any) => {
+                const message =
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Ocurrió un error al registrar la cuenta";
+                setServerErrorMessage(message);
+            },
+        });
     };
 
     return (
@@ -104,13 +121,6 @@ const Register = () => {
                         Regístrate para solicitar y dar seguimiento a tus
                         eventos.
                     </p>
-                </div>
-
-                {/* Step indicator */}
-                <div className="step-indicator">
-                    <div className="step active" />
-                    <div className="step active" />
-                    <div className="step" />
                 </div>
 
                 {/* Form */}
@@ -135,6 +145,7 @@ const Register = () => {
                                 value={form.nombre}
                                 onChange={handleChange}
                                 onBlur={() => handleBlur("nombre")}
+                                disabled={registerMutation.isPending}
                             />
                             {showError("nombre") && (
                                 <span className="error-msg">
@@ -157,6 +168,7 @@ const Register = () => {
                                 value={form.apellido}
                                 onChange={handleChange}
                                 onBlur={() => handleBlur("apellido")}
+                                disabled={registerMutation.isPending}
                             />
                             {showError("apellido") && (
                                 <span className="error-msg">
@@ -182,6 +194,7 @@ const Register = () => {
                             value={form.email}
                             onChange={handleChange}
                             onBlur={() => handleBlur("email")}
+                            disabled={registerMutation.isPending}
                         />
                         {showError("email") && (
                             <span className="error-msg">{errors.email}</span>
@@ -203,6 +216,7 @@ const Register = () => {
                             value={form.password}
                             onChange={handleChange}
                             onBlur={() => handleBlur("password")}
+                            disabled={registerMutation.isPending}
                         />
                         {form.password && (
                             <div className="strength-wrapper">
@@ -247,6 +261,7 @@ const Register = () => {
                             value={form.confirmPassword}
                             onChange={handleChange}
                             onBlur={() => handleBlur("confirmPassword")}
+                            disabled={registerMutation.isPending}
                         />
                         {showError("confirmPassword") && (
                             <span className="error-msg">
@@ -255,17 +270,29 @@ const Register = () => {
                         )}
                     </div>
 
+                    {/* Server error alert */}
+                    {serverErrorMessage && (
+                        <div className="auth-error">
+                            <span className="auth-error-icon">!</span>
+                            {serverErrorMessage}
+                        </div>
+                    )}
+
                     {/* Submit */}
-                    <button type="submit" className="btn-register">
-                        Crear mi cuenta
+                    <button
+                        type="submit"
+                        className="btn-register"
+                        disabled={registerMutation.isPending}
+                    >
+                        {registerMutation.isPending ? "Creando cuenta..." : "Crear mi cuenta"}
                     </button>
 
                     {/* Login link */}
                     <p className="login-link">
                         ¿Ya tienes cuenta?{" "}
-                        <a href="/login" className="link-gold">
+                        <Link to="/login" className="link-gold">
                             Inicia sesión
-                        </a>
+                        </Link>
                     </p>
                 </form>
             </div>
