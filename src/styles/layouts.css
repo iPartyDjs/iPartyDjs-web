@@ -1229,3 +1229,42 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ==== Estructura del Dashboard Fix ==== */
+.dashboard-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--color-bg);
+}
+
+/* Sidebar fijo a la izquierda */
+.dashboard-layout__sidebar {
+    width: 240px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    background-color: var(--color-surface-1);
+    border-right: 1px solid var(--color-surface-3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+/* Área principal con Scroll independiente */
+.dashboard-layout__main {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto; /* Permite scroll fluido en la parte derecha */
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-layout__content {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+}

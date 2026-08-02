@@ -1,0 +1,488 @@
+/* =====================================================
+   iPartyDJs — Mi Perfil
+   Design System: Gold / Black / Dark / White
+   Tipografías: Cormorant Garamond (títulos) · Montserrat (UI)
+===================================================== */
+
+.profile-page {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dark: #8b6914;
+  --black: #080808;
+  --black-soft: #111111;
+  --dark-1: #161616;
+  --dark-2: #1e1e1e;
+  --dark-3: #2a2a2a;
+  --white: #f5f0e8;
+
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  color: var(--white);
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* -------- Encabezado -------- */
+.profile-header {
+  margin-bottom: 8px;
+}
+
+.profile-eyebrow {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  margin: 0 0 8px;
+}
+
+.profile-title {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  color: var(--white);
+}
+
+.profile-subtitle {
+  font-size: 14.5px;
+  color: rgba(245, 240, 232, 0.6);
+  margin: 0;
+  max-width: 560px;
+}
+
+/* -------- Card base (glassmorphism sutil) -------- */
+.profile-card {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.7), rgba(17, 17, 17, 0.85));
+  border: 1px solid rgba(201, 168, 76, 0.14);
+  border-radius: 18px;
+  padding: 28px 30px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: border-color 300ms ease, transform 300ms ease;
+}
+
+.profile-card:hover {
+  border-color: rgba(201, 168, 76, 0.28);
+}
+
+.profile-card-header h3 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0 0 4px;
+  color: var(--white);
+}
+
+.profile-card-header p {
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.5);
+  margin: 0 0 22px;
+}
+
+/* -------- Resumen / Avatar -------- */
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.profile-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--dark-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.08);
+  transition: box-shadow 300ms ease, transform 300ms ease;
+}
+
+.profile-avatar:hover {
+  box-shadow: 0 0 0 6px rgba(201, 168, 76, 0.14);
+  transform: translateY(-2px);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-initials {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--gold-light);
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 8, 0.72);
+  color: var(--gold-light);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.profile-avatar-overlay svg {
+  width: 15px;
+  height: 15px;
+}
+
+.profile-avatar:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-input {
+  display: none;
+}
+
+.profile-summary-info h2 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0 0 6px;
+}
+
+.profile-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.profile-meta {
+  font-size: 12.5px;
+  color: rgba(245, 240, 232, 0.5);
+  margin: 0;
+}
+
+/* -------- Formularios -------- */
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-field--full {
+  grid-column: 1 / -1;
+}
+
+.profile-field label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: rgba(245, 240, 232, 0.7);
+}
+
+.profile-field input {
+  width: 100%;
+  background: var(--black-soft);
+  border: 1px solid var(--dark-3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.profile-field input::placeholder {
+  color: rgba(245, 240, 232, 0.35);
+}
+
+.profile-field input:focus,
+.profile-field input:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+.profile-field input.is-invalid {
+  border-color: #d16a6a;
+  box-shadow: 0 0 0 3px rgba(209, 106, 106, 0.12);
+}
+
+.field-error {
+  font-size: 11.5px;
+  color: #e08a8a;
+}
+
+.profile-input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-input-icon input {
+  padding-right: 42px;
+}
+
+.profile-input-icon button {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: rgba(245, 240, 232, 0.5);
+  cursor: pointer;
+  display: flex;
+  transition: color 300ms ease;
+}
+
+.profile-input-icon button:hover,
+.profile-input-icon button:focus-visible {
+  color: var(--gold-light);
+}
+
+.profile-input-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.profile-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+/* -------- Botones -------- */
+.btn-gold,
+.btn-outline-gold {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 12px 26px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 300ms ease, box-shadow 300ms ease, background 300ms ease,
+    border-color 300ms ease;
+}
+
+.btn-gold {
+  border: none;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+}
+
+.btn-gold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(201, 168, 76, 0.28);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  color: var(--gold-light);
+  border: 1px solid rgba(201, 168, 76, 0.5);
+}
+
+.btn-outline-gold:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.btn-gold:disabled,
+.btn-outline-gold:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-gold:focus-visible,
+.btn-outline-gold:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* -------- Toggles -------- */
+.profile-toggle-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(245, 240, 232, 0.06);
+}
+
+.toggle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.toggle-row-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--white);
+}
+
+.toggle-row-description {
+  font-size: 12.5px;
+  color: rgba(245, 240, 232, 0.5);
+  margin: 0;
+}
+
+.toggle-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--dark-3);
+  background: var(--black-soft);
+  cursor: pointer;
+  transition: background 300ms ease, border-color 300ms ease;
+}
+
+.toggle-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(245, 240, 232, 0.5);
+  transition: transform 300ms ease, background 300ms ease;
+}
+
+.toggle-switch.is-on {
+  background: rgba(201, 168, 76, 0.18);
+  border-color: var(--gold);
+}
+
+.toggle-switch.is-on .toggle-switch-thumb {
+  transform: translateX(20px);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+}
+
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* -------- Alerta de guardado -------- */
+.profile-alert {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.profile-alert svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.profile-alert--success {
+  background: rgba(46, 125, 84, 0.14);
+  border: 1px solid rgba(90, 200, 140, 0.35);
+  color: #8fe3b4;
+}
+
+.profile-alert--error {
+  background: rgba(140, 46, 46, 0.14);
+  border: 1px solid rgba(224, 138, 138, 0.35);
+  color: #e08a8a;
+}
+
+/* -------- Animación fade up -------- */
+.fade-up {
+  animation: profileFadeUp 420ms ease both;
+}
+
+.profile-card:nth-of-type(2) { animation-delay: 60ms; }
+.profile-card:nth-of-type(3) { animation-delay: 120ms; }
+.profile-card:nth-of-type(4) { animation-delay: 180ms; }
+
+@keyframes profileFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .profile-card,
+  .profile-avatar,
+  .toggle-switch,
+  .toggle-switch-thumb,
+  .btn-gold,
+  .btn-outline-gold {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* -------- Responsive -------- */
+@media (max-width: 640px) {
+  .profile-page {
+    padding: 28px 16px 60px;
+  }
+
+  .profile-title {
+    font-size: 32px;
+  }
+
+  .profile-card {
+    padding: 22px 18px;
+  }
+
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

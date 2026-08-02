@@ -1,4 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useCursor } from "@/core/hooks/useCursor";
+import '../styles/layouts.css';
 
 // TODO: reemplazar por tu fuente real de datos de sesión (context/store)
 // cuando exista. Placeholder deliberado, no funcional.
@@ -10,6 +12,7 @@ function handleLogout(navigate: ReturnType<typeof useNavigate>) {
 }
 
 export default function DashboardLayout() {
+    useCursor();
     const navigate = useNavigate();
 
     return (
@@ -17,11 +20,6 @@ export default function DashboardLayout() {
             <aside className="dashboard-layout__sidebar sidebar">
                 <nav className="dashboard-layout__nav">
                     <div className="sidebar-logo">
-                        <img
-                            src="/logo-ipartydjs.png"
-                            alt="iPartyDjs"
-                            className="logo-img"
-                        />
                         <span className="logo-text">iPartyDjs</span>
                     </div>
                     <p className="er-eyebrow">PANEL CLIENTE</p>
@@ -70,7 +68,7 @@ export default function DashboardLayout() {
                         Mis Citas
                     </NavLink>
                     <NavLink
-                        to="/dashboard/"
+                        to="/dashboard/Reviewform"
                         className={({ isActive }) =>
                             isActive
                                 ? "dashboard-layout__link nav-item is-active"
@@ -86,7 +84,7 @@ export default function DashboardLayout() {
                     <button
                         type="button"
                         className="btn-outline"
-                        onClick={() => {}}
+                        onClick={() => navigate("/dashboard/profile")}
                     >
                         Mi perfil
                     </button>

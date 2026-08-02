@@ -1,21 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap");
 
 :root {
-    /* Paleta unificada. Nota de unificacion de tonos casi-identicos:
-     se conservo el tono mas OSCURO de cada par, tal como se pidio. */
-    --color-primary: #c9a14a; /* unifica #C9A84C (uso mayoritario, ~63x) y #C9A14A (~8x): se eligio el mas oscuro */
+    /* Paleta unificada */
+    --color-primary: #c9a14a;
     --color-primary-rgb: 201, 161, 74;
-    --color-primary-light: #e8c97a; /* antes --gold-hover / --gold-light */
-    --color-primary-dark: #8b6914; /* antes --gold-dark */
-    --color-primary-gradient: #a9842f; /* extremo de degradado en tarjeta "signature" */
+    --color-primary-light: #e8c97a;
+    --color-primary-dark: #8b6914;
+    --color-primary-gradient: #a9842f;
 
-    --color-bg: #080808; /* unifica #0D0D0D, #0A0A0A y #080808: se eligio el mas oscuro */
+    --color-bg: #080808;
     --color-bg-rgb: 8, 8, 8;
-    --color-surface-1: #141414; /* unifica #111111, #131313, #141414, #161616, #181818 (fondos de tarjetas/sidebar) */
-    --color-surface-2: #1a1a1a; /* unifica #1A1A1A, #1E1E1E, #202020 (inputs/paneles secundarios) */
-    --color-surface-3: #2a2a2a; /* divisores y elementos inactivos */
+    --color-surface-1: #141414;
+    --color-surface-2: #1a1a1a;
+    --color-surface-3: #2a2a2a;
 
-    --color-white: #f5f0e8; /* unifica #F5F0E8 (uso mayoritario) y #F5F5F0 */
+    --color-white: #f5f0e8;
     --color-white-rgb: 245, 240, 232;
     --color-text-muted: rgba(245, 240, 232, 0.55);
     --color-text-dim: rgba(245, 240, 232, 0.3);
@@ -24,18 +23,26 @@
 
     --color-danger: #e05252;
     --color-danger-rgb: 224, 82, 82;
-    --color-success: #4caf50; /* unifica #4CAF50 y #4CAF80: se eligio el mas oscuro */
+    --color-success: #4caf50;
     --color-success-rgb: 76, 175, 80;
     --color-warning: #ff9800;
-    --color-info: #5599ff; /* unifica #5599FF y #6CA0E8: se eligio el mas oscuro */
+    --color-info: #5599ff;
     --color-info-rgb: 85, 153, 255;
-    --color-accent-alert: #b3392f; /* acento puntual (indicador tipo "en vivo") */
+    --color-accent-alert: #b3392f;
     --color-black-rgb: 0, 0, 0;
 
     --border-color: rgba(var(--color-primary-rgb), 0.08);
 
     --font-display: "Cormorant Garamond", serif;
     --font-body: "Montserrat", sans-serif;
+
+    /* Escalado fluido de fuentes (Sensible al zoom) */
+    --font-size-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+    --font-size-sm: clamp(0.8rem, 1vw, 0.9rem);
+    --font-size-base: clamp(0.9rem, 1.1vw, 1rem);
+    --font-size-lg: clamp(1.1rem, 1.5vw, 1.25rem);
+    --font-size-xl: clamp(1.4rem, 2vw, 1.75rem);
+    --font-size-2xl: clamp(1.8rem, 3vw, 2.5rem);
 }
 
 /* ==== Reset ==== */
@@ -58,7 +65,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Habilita el cursor oculto solo en páginas públicas (añadir la clase `public-cursor` al body) */
 body.public-cursor {
     cursor: none;
 }
@@ -86,7 +92,40 @@ a {
     border-radius: 2px;
 }
 
-/* ==== Animaciones (usadas por components.css y layouts.css) ==== */
+/* ==== Estructura Base del Dashboard Layout ==== */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--color-bg);
+}
+
+.dashboard-layout__sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: var(--color-surface-1);
+    border-right: 1px solid var(--color-surface-3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dashboard-layout__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+}
+
+.dashboard-layout__content {
+    flex: 1;
+    padding: clamp(1rem, 3vw, 2.5rem);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ==== Animaciones ==== */
 @keyframes fadeUp {
     from {
         opacity: 0;
@@ -106,61 +145,5 @@ a {
     to {
         opacity: 1;
         transform: scale(1);
-    }
-}
-
-@keyframes ringPulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.1;
-    }
-}
-
-@keyframes particleFade {
-    0%,
-    100% {
-        opacity: 0;
-        transform: translateY(0);
-    }
-    50% {
-        opacity: 0.6;
-        transform: translateY(-20px);
-    }
-}
-
-@keyframes scrollAnim {
-    0%,
-    100% {
-        transform: scaleY(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scaleY(0.5);
-        opacity: 0.4;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes marqueeScroll {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(-50%);
     }
 }

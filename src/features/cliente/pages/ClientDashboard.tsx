@@ -183,25 +183,6 @@ export const ClientDashboard: React.FC = () => {
                         </div>
                     </div>
                 </section>
-
-                {/* Accesos Rápidos */}
-                <section className="quick-actions-section">
-                    <h2>Accesos rápidos</h2>
-                    <div className="quick-actions-grid">
-                        <button className="quick-action-btn">
-                            <div className="action-icon">➕</div>
-                            <span>Nueva solicitud</span>
-                        </button>
-                        <button className="quick-action-btn">
-                            <div className="action-icon">📋</div>
-                            <span>Ver solicitudes</span>
-                        </button>
-                        <button className="quick-action-btn">
-                            <div className="action-icon">📅</div>
-                            <span>Mis citas</span>
-                        </button>
-                    </div>
-                </section>
             </main>
         </div>
     );

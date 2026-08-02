@@ -1,4 +1,3 @@
-import { useCursor } from "@/core/hooks/useCursor";
 import Marquee from "@/shared/Marquee";
 import { useEffect } from "react";
 import Gallery from "../components/Gallery";
@@ -10,29 +9,21 @@ import WeddingExperiences from "../components/WeddingExperiences";
 import Contact from "../components/Contact";
 
 const Home = () => {
-    useCursor();
-
     useEffect(() => {
         document.title = "iPartyDJs — Producción & Coordinación de Eventos";
     }, []);
 
     return (
-        <>
-            <div className="cursor" />
-            <div className="cursor-follower" />
-            {/* <Navbar /> */}
-            <main>
-                <Hero />
-                <Marquee />
-                <Services />
-                <WeddingExperiences />
-                <Stats />
-                <Process />
-                <Gallery />
-                <Contact />
-            </main>
-            {/* <Footer /> */}
-        </>
+        <main>
+            <Hero />
+            <Marquee />
+            <Services />
+            <WeddingExperiences />
+            <Stats />
+            <Process />
+            <Gallery />
+            <Contact />
+        </main>
     );
 };
 
