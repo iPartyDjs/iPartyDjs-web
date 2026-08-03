@@ -1,51 +1,36 @@
+// src/core/stores/auth.store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthTokenPayload, RoleName } from "@ipartydjs/shared";
 
-interface AuthStore {
+interface AuthState {
     user: AuthTokenPayload | null;
     token: string | null;
-
+    isAuthenticated: boolean;
     setAuth: (token: string, user: AuthTokenPayload) => void;
     logout: () => void;
-
-    isAuthenticated: boolean;
     hasRole: (role: RoleName) => boolean;
 }
 
-export const useAuthStore = create<AuthStore>()(
+export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
             user: null,
             token: null,
+            isAuthenticated: false,
 
-            setAuth: (token: string, user: AuthTokenPayload) => {
-                // Also store token separately in localStorage for Axios interceptor
+            setAuth: (token, user) => {
                 localStorage.setItem("auth_token", token);
-                set({ token, user });
+                set({ token, user, isAuthenticated: true });
             },
 
             logout: () => {
                 localStorage.removeItem("auth_token");
-                set({ token: null, user: null });
+                set({ token: null, user: null, isAuthenticated: false });
             },
 
-            get isAuthenticated() {
-                return !!get().user;
-            },
-
-            hasRole: (role: RoleName) => {
-                const { user } = get();
-                if (!user) return false;
-                return user.rol?.includes(role) ?? false;
-            },
+            hasRole: (role) => get().user?.rol === role,
         }),
-        {
-            name: "auth-storage",
-            partialize: (state) => ({
-                user: state.user,
-                token: state.token,
-            }),
-        },
+        { name: "auth-storage" },
     ),
 );

@@ -1,35 +1,45 @@
+// src/features/auth/hooks/useAuth.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/auth.service";
+import { jwtDecode } from "jwt-decode";
+import { AuthTokenPayloadSchema } from "@ipartydjs/shared";
+import { authService } from "@/features/auth/services/auth.service";
 import { useAuthStore } from "@/core/stores/auth.store";
-import type { LoginInput, RegisterClientInput } from "@ipartydjs/shared";
 
-export const useLogin = () => {
+export function useLogin() {
     const setAuth = useAuthStore((state) => state.setAuth);
+    const logout = useAuthStore((state) => state.logout);
 
     return useMutation({
-        mutationFn: (data: LoginInput) => authService.login(data),
-        onSuccess: (data) => {
-            const { token, user } = data;
-            setAuth(token, user);
+        mutationFn: authService.login,
+        onSuccess: ({ token }) => {
+            const decoded: unknown = jwtDecode(token);
+            const result = AuthTokenPayloadSchema.safeParse(decoded);
+
+            if (!result.success) {
+                logout();
+                throw new Error("Token recibido con formato inesperado");
+            }
+
+            setAuth(token, result.data);
         },
     });
-};
+}
 
-export const useRegister = () => {
+export function useRegister() {
     const navigate = useNavigate();
 
     return useMutation({
-        mutationFn: (data: RegisterClientInput) => authService.register(data),
+        mutationFn: authService.register,
         onSuccess: () => {
             navigate("/login");
         },
     });
-};
+}
 
-export const useLogout = () => {
-    const queryClient = useQueryClient();
+export function useLogout() {
     const logout = useAuthStore((state) => state.logout);
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
 
     return () => {
@@ -37,4 +47,4 @@ export const useLogout = () => {
         queryClient.clear();
         navigate("/");
     };
-};
+}
