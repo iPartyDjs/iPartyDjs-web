@@ -3,6 +3,7 @@ import { LoginSchema, type LoginInput } from "@ipartydjs/shared";
 import { useNavigate, Link } from "react-router-dom";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import axios from "axios";
+
 const Login = () => {
   const navigate = useNavigate();
   const loginMutation = useLogin();

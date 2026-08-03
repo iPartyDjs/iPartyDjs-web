@@ -1,4 +1,7 @@
+allowBuilds:
+  core-js: true
 minimumReleaseAgeExclude:
   - framer-motion@12.42.2
   - motion-dom@12.42.2
   - motion@12.42.2
+  - '@ipartydjs/shared@8.2.0'
