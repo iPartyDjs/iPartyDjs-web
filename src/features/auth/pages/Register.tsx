@@ -57,7 +57,9 @@ const Register = () => {
     });
 
     const [submitted, setSubmitted] = useState(false);
-    const [serverErrorMessage, setServerErrorMessage] = useState<string | null>(null);
+    const [serverErrorMessage, setServerErrorMessage] = useState<string | null>(
+        null,
+    );
 
     const passwordStrength = getPasswordStrength(form.password);
 
@@ -284,7 +286,9 @@ const Register = () => {
                         className="btn-register"
                         disabled={registerMutation.isPending}
                     >
-                        {registerMutation.isPending ? "Creando cuenta..." : "Crear mi cuenta"}
+                        {registerMutation.isPending
+                            ? "Creando cuenta..."
+                            : "Crear mi cuenta"}
                     </button>
 
                     {/* Login link */}

@@ -1,18 +1,15 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useCursor } from "@/core/hooks/useCursor";
-import '../styles/layouts.css';
-
-// TODO: reemplazar por tu fuente real de datos de sesión (context/store)
-// cuando exista. Placeholder deliberado, no funcional.
-const CURRENT_USER_NAME = "Maria G";
-
-function handleLogout(navigate: ReturnType<typeof useNavigate>) {
-    // TODO: limpiar token/sesión real aquí antes de redirigir
-    navigate("/login");
-}
+import "../styles/layouts.css";
+import { useAuthStore } from "@/core/stores/auth.store";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 
 export default function DashboardLayout() {
+    const user = useAuthStore((state) => state.user);
+    const logout = useLogout();
+
     useCursor();
+
     const navigate = useNavigate();
 
     return (
@@ -22,7 +19,6 @@ export default function DashboardLayout() {
                     <div className="sidebar-logo">
                         <span className="logo-text">iPartyDjs</span>
                     </div>
-                    <p className="er-eyebrow">PANEL CLIENTE</p>
                     <NavLink
                         to="/dashboard"
                         className={({ isActive }) =>
@@ -91,7 +87,7 @@ export default function DashboardLayout() {
                     <button
                         type="button"
                         className="btn-outline"
-                        onClick={() => handleLogout(navigate)}
+                        onClick={logout}
                     >
                         Cerrar Sesión
                     </button>
@@ -99,8 +95,10 @@ export default function DashboardLayout() {
                 <div className="sidebar-footer">
                     <div className="user-avatar">MG</div>
                     <div className="user-info">
-                        <span className="user-name">{CURRENT_USER_NAME}</span>
-                        <span className="user-role">cliente</span>
+                        <span className="user-name">
+                            {user ? user.email : "cargando..."}
+                        </span>
+                        <span className="user-role">Cliente</span>
                     </div>
                 </div>
             </aside>
