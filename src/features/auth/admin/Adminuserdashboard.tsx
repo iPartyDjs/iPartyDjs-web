@@ -1,102 +1,37 @@
-import { useMemo, useState, type JSX } from "react";
+import { useMemo, useState, useEffect, useCallback, type JSX } from "react";
+import type { PaginatedResult } from "@ipartydjs/shared";
 import AdminPageShell from "./AdminPageShell";
 import "./AdminUsersDashboard.css";
 
 /* ------------------------------------------------------------------ */
-/*  Types                                                              */
+/*  Tipos locales y adaptadores                                       */
 /* ------------------------------------------------------------------ */
 
-type Role = "Cliente" | "Fotografo" | "Admin";
-
-interface UserRecord {
-  id: string;
-  firstName: string;
-  lastName: string;
+// Extendemos temporalmente la interfaz para asegurar compatibilidad total
+export interface AdminUsuarioUI {
+  id_usuario: string;
+  nombre: string;
+  apellido: string;
   email: string;
-  phone: string;
-  role: Role;
-  active: boolean;
-  registeredAt: string;
-  lastAccess: string;
+  estado: "activo" | "baja";
+  created_at: string;
+  id_rol: string;
+  rol_nombre?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Mock data (swap for API data)                                      */
-/* ------------------------------------------------------------------ */
-
-const USERS: UserRecord[] = [
-  {
-    id: "u1",
-    firstName: "María",
-    lastName: "González",
-    email: "m.gonzalez@gmail.com",
-    phone: "777 123 4567",
-    role: "Cliente",
-    active: true,
-    registeredAt: "3 jun 2025",
-    lastAccess: "Hoy",
-  },
-  {
-    id: "u2",
-    firstName: "Javier",
-    lastName: "Reyes",
-    email: "javier.reyes@hotmail.com",
-    phone: "777 456 7890",
-    role: "Fotografo",
-    active: true,
-    registeredAt: "15 ene 2025",
-    lastAccess: "Ayer",
-  },
-  {
-    id: "u3",
-    firstName: "Ana",
-    lastName: "López",
-    email: "ana.lopez@gmail.com",
-    phone: "777 321 6540",
-    role: "Admin",
-    active: true,
-    registeredAt: "1 feb 2025",
-    lastAccess: "2 jun 2025",
-  },
-  {
-    id: "u4",
-    firstName: "Valentina",
-    lastName: "Ruiz",
-    email: "v.ruiz@outlook.com",
-    phone: "777 987 1234",
-    role: "Cliente",
-    active: true,
-    registeredAt: "20 mar 2025",
-    lastAccess: "30 may 2025",
-  },
-  {
-    id: "u5",
-    firstName: "Carlos",
-    lastName: "Pérez",
-    email: "cperez@empresa.mx",
-    phone: "777 654 3210",
-    role: "Cliente",
-    active: false,
-    registeredAt: "5 abr 2025",
-    lastAccess: "10 abr 2025",
-  },
-];
-
-const ROLE_LABEL: Record<Role, string> = {
-  Cliente: "Cliente",
-  Fotografo: "Fotógrafo",
-  Admin: "Admin",
+const ROLE_LABEL: Record<string, string> = {
+  cliente: "Cliente",
+  fotografo: "Fotógrafo",
+  admin: "Admin",
+  superadmin: "Super Admin",
 };
 
-const ROLE_CLASS: Record<Role, string> = {
-  Cliente: "role-pill role-cliente",
-  Fotografo: "role-pill role-fotografo",
-  Admin: "role-pill role-admin",
+const ROLE_CLASS: Record<string, string> = {
+  cliente: "role-pill role-cliente",
+  fotografo: "role-pill role-fotografo",
+  admin: "role-pill role-admin",
+  superadmin: "role-pill role-admin",
 };
-
-/* ------------------------------------------------------------------ */
-/*  Icons                                                               */
-/* ------------------------------------------------------------------ */
 
 const Icon = {
   search: (
@@ -133,94 +68,149 @@ const Icon = {
   ),
 };
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                             */
-/* ------------------------------------------------------------------ */
-
-function initials(u: UserRecord): string {
-  return (u.firstName[0] ?? "") + (u.lastName[0] ?? "");
+function initials(u: AdminUsuarioUI): string {
+  return (u.nombre[0] ?? "") + (u.apellido[0] ?? "");
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                           */
+/*  Componente Principal                                              */
 /* ------------------------------------------------------------------ */
 
 export default function Adminuserdashboard(): JSX.Element {
-  const [users, setUsers] = useState<UserRecord[]>(USERS);
-  const [selectedId, setSelectedId] = useState<string>(USERS[0].id);
+  const [paginatedData, setPaginatedData] =
+    useState<PaginatedResult<AdminUsuarioUI> | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [selectedUser, setSelectedUser] = useState<AdminUsuarioUI | null>(null);
   const [search, setSearch] = useState("");
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const [draft, setDraft] = useState<Partial<UserRecord>>({});
+  const [draft, setDraft] = useState<Partial<AdminUsuarioUI>>({});
   const [page, setPage] = useState(1);
 
-  const selectedUser = useMemo(
-    () => users.find((u) => u.id === selectedId) ?? users[0],
-    [users, selectedId],
-  );
+  // Memorizar la lista de usuarios para estabilizar los hooks de React
+  const users = useMemo(() => paginatedData?.data ?? [], [paginatedData]);
+  const totalUsers = paginatedData?.total ?? 0;
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE) || 1;
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        ROLE_LABEL[u.role].toLowerCase().includes(q),
-    );
-  }, [users, search]);
+  // Carga de datos desde la API
+  // Carga de datos desde la API
+  const fetchUsers = useCallback(async () => {
+    // Activamos loading dentro de la función asíncrona
+    setLoading(true);
+    try {
+      const query = new URLSearchParams({
+        page: page.toString(),
+        limit: PAGE_SIZE.toString(),
+        ...(search && { search }),
+      });
+
+      const res = await fetch(`/api/usuarios?${query.toString()}`);
+      const json = await res.json();
+
+      if (json.success) {
+        setPaginatedData(json.data);
+        if (json.data.data.length > 0) {
+          setSelectedUser((prev) => prev ?? json.data.data[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Error al obtener usuarios:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, search]);
+
+  useEffect(() => {
+    // Al diferirlo a un microtick con Promise.resolve(), React no lo detecta como
+    // un re-render síncrono en cascada dentro del cuerpo del efecto.
+    Promise.resolve().then(() => {
+      void fetchUsers();
+    });
+  }, [fetchUsers]);
 
   const stats = useMemo(() => {
-    const total = users.length;
-    const activos = users.filter((u) => u.active).length;
-    const fotografos = users.filter((u) => u.role === "Fotografo").length;
-    const inactivos = total - activos;
+    const total = totalUsers;
+    const activos = users.filter((u) => u.estado === "activo").length;
+    const fotografos = users.filter(
+      (u) => u.rol_nombre?.toLowerCase() === "fotografo",
+    ).length;
+    const inactivos = users.filter((u) => u.estado === "baja").length;
     return { total, activos, fotografos, inactivos };
-  }, [users]);
+  }, [users, totalUsers]);
 
-  function selectUser(u: UserRecord) {
-    setSelectedId(u.id);
+  function selectUser(u: AdminUsuarioUI) {
+    setSelectedUser(u);
     setDraft({});
   }
 
   function toggleCheck(id: string) {
     setCheckedIds((prev) => {
       const next = new Set(prev);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
 
   function toggleCheckAll(checked: boolean) {
-    setCheckedIds(checked ? new Set(filtered.map((u) => u.id)) : new Set());
+    setCheckedIds(
+      checked ? new Set(users.map((u) => u.id_usuario)) : new Set(),
+    );
   }
 
-  function handleDraftChange<K extends keyof UserRecord>(
+  function handleDraftChange<K extends keyof AdminUsuarioUI>(
     key: K,
-    value: UserRecord[K],
+    value: AdminUsuarioUI[K],
   ) {
     setDraft((d) => ({ ...d, [key]: value }));
   }
+  async function saveChanges() {
+    if (!selectedUser) return;
 
-  function saveChanges() {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === selectedUser.id ? { ...u, ...draft } : u)),
-    );
-    setDraft({});
+    try {
+      if (draft.id_rol && draft.id_rol !== selectedUser.id_rol) {
+        await fetch(`/api/usuarios/${selectedUser.id_usuario}/rol`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_rol: draft.id_rol }),
+        });
+      }
+
+      setDraft({});
+      await fetchUsers();
+    } catch (err) {
+      console.error("Error al guardar cambios:", err);
+    }
   }
 
-  function deactivateUser() {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === selectedUser.id ? { ...u, active: false } : u)),
-    );
+  async function deactivateUser() {
+    if (!selectedUser) return;
+    try {
+      await fetch(`/api/usuarios/${selectedUser.id_usuario}/desactivar`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+      await fetchUsers();
+    } catch (err) {
+      console.error("Error al dar de baja al usuario:", err);
+    }
   }
 
-  const displayFirst = draft.firstName ?? selectedUser.firstName;
-  const displayLast = draft.lastName ?? selectedUser.lastName;
-  const displayRole = (draft.role ?? selectedUser.role) as Role;
-  const displayActive = draft.active ?? selectedUser.active;
+  // 2. Guardar Cambios (Rol)
+
+  const displayFirst = draft.nombre ?? selectedUser?.nombre ?? "";
+  const displayLast = draft.apellido ?? selectedUser?.apellido ?? "";
+  const displayRoleKey = (
+    draft.rol_nombre ??
+    selectedUser?.rol_nombre ??
+    "cliente"
+  ).toLowerCase();
+  const displayActive = (draft.estado ?? selectedUser?.estado) === "activo";
 
   const mainContent = (
     <>
@@ -254,7 +244,10 @@ export default function Adminuserdashboard(): JSX.Element {
             type="text"
             placeholder="Buscar por nombre, correo o rol..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <button className="ipdj-filter-btn">Todos los roles ▾</button>
@@ -272,9 +265,7 @@ export default function Adminuserdashboard(): JSX.Element {
               <th style={{ width: 36 }}>
                 <input
                   type="checkbox"
-                  checked={
-                    filtered.length > 0 && checkedIds.size === filtered.length
-                  }
+                  checked={users.length > 0 && checkedIds.size === users.length}
                   onChange={(e) => toggleCheckAll(e.target.checked)}
                 />
               </th>
@@ -286,66 +277,96 @@ export default function Adminuserdashboard(): JSX.Element {
             </tr>
           </thead>
           <tbody>
-            {filtered.slice(0, PAGE_SIZE).map((u) => (
-              <tr
-                key={u.id}
-                className={u.id === selectedUser.id ? "selected" : ""}
-                onClick={() => selectUser(u)}
-              >
-                <td onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={checkedIds.has(u.id)}
-                    onChange={() => toggleCheck(u.id)}
-                  />
-                </td>
-                <td>
-                  <div className="ipdj-user-cell">
-                    <div className="ipdj-avatar-sm">{initials(u)}</div>
-                    <div>
-                      <div className="u-name">
-                        {u.firstName} {u.lastName}
-                      </div>
-                      <div className="u-mail">{u.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <span className={ROLE_CLASS[u.role]}>
-                    {ROLE_LABEL[u.role]}
-                  </span>
-                </td>
-                <td>
-                  <span className={`ipdj-status ${u.active ? "on" : "off"}`}>
-                    <span className={`ipdj-dot ${u.active ? "on" : "off"}`} />
-                    {u.active ? "Activo" : "Inactivo"}
-                  </span>
-                </td>
-                <td className="cell-muted">{u.registeredAt}</td>
-                <td className="cell-muted">{u.lastAccess}</td>
-                <td onClick={(e) => e.stopPropagation()}>
-                  <div className="ipdj-actions-cell">
-                    <button className="ipdj-act-btn" title="Ver">
-                      {Icon.eye}
-                    </button>
-                    <button
-                      className="ipdj-act-btn"
-                      title="Editar"
-                      onClick={() => selectUser(u)}
-                    >
-                      {Icon.edit}
-                    </button>
-                    <button className="ipdj-act-btn" title="Más">
-                      {Icon.more}
-                    </button>
-                  </div>
+            {loading ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center", padding: 24 }}>
+                  Cargando usuarios...
                 </td>
               </tr>
-            ))}
-            {filtered.length === 0 && (
+            ) : (
+              users.map((u) => {
+                const roleKey = (u.rol_nombre ?? "cliente").toLowerCase();
+                const isActivo = u.estado === "activo";
+                return (
+                  <tr
+                    key={u.id_usuario}
+                    className={
+                      u.id_usuario === selectedUser?.id_usuario
+                        ? "selected"
+                        : ""
+                    }
+                    onClick={() => selectUser(u)}
+                  >
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={checkedIds.has(u.id_usuario)}
+                        onChange={() => toggleCheck(u.id_usuario)}
+                      />
+                    </td>
+                    <td>
+                      <div className="ipdj-user-cell">
+                        <div className="ipdj-avatar-sm">{initials(u)}</div>
+                        <div>
+                          <div className="u-name">
+                            {u.nombre} {u.apellido}
+                          </div>
+                          <div className="u-mail">{u.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={
+                          ROLE_CLASS[roleKey] ?? "role-pill role-cliente"
+                        }
+                      >
+                        {ROLE_LABEL[roleKey] ?? u.rol_nombre}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`ipdj-status ${isActivo ? "on" : "off"}`}
+                      >
+                        <span
+                          className={`ipdj-dot ${isActivo ? "on" : "off"}`}
+                        />
+                        {isActivo ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td className="cell-muted">
+                      {new Date(u.created_at).toLocaleDateString("es-MX", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="ipdj-actions-cell">
+                        <button className="ipdj-act-btn" title="Ver">
+                          {Icon.eye}
+                        </button>
+                        <button
+                          className="ipdj-act-btn"
+                          title="Editar"
+                          onClick={() => selectUser(u)}
+                        >
+                          {Icon.edit}
+                        </button>
+                        <button className="ipdj-act-btn" title="Más">
+                          {Icon.more}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+
+            {!loading && users.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="cell-muted"
                   style={{ textAlign: "center", padding: 24 }}
                 >
@@ -358,17 +379,17 @@ export default function Adminuserdashboard(): JSX.Element {
 
         <div className="ipdj-table-footer">
           <div className="count">
-            Mostrando {Math.min(PAGE_SIZE, filtered.length)} de {users.length}{" "}
-            usuarios
+            Mostrando {users.length} de {totalUsers} usuarios
           </div>
           <div className="ipdj-pagination">
             <button
               className="ipdj-page-btn"
+              disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               ‹
             </button>
-            {[1, 2, 3].map((n) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
               <button
                 key={n}
                 className={`ipdj-page-btn${page === n ? " active" : ""}`}
@@ -379,7 +400,8 @@ export default function Adminuserdashboard(): JSX.Element {
             ))}
             <button
               className="ipdj-page-btn"
-              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               ›
             </button>
@@ -389,7 +411,7 @@ export default function Adminuserdashboard(): JSX.Element {
     </>
   );
 
-  const sidePanel = (
+  const sidePanel = selectedUser ? (
     <>
       <h3>Editar usuario</h3>
 
@@ -402,7 +424,8 @@ export default function Adminuserdashboard(): JSX.Element {
             {displayFirst} {displayLast}
           </div>
           <div className="ep-sub">
-            {ROLE_LABEL[displayRole]} · {displayActive ? "Activo" : "Inactivo"}
+            {ROLE_LABEL[displayRoleKey] ?? displayRoleKey} ·{" "}
+            {displayActive ? "Activo" : "Inactivo"}
           </div>
         </div>
       </div>
@@ -412,7 +435,7 @@ export default function Adminuserdashboard(): JSX.Element {
         <input
           type="text"
           value={displayFirst}
-          onChange={(e) => handleDraftChange("firstName", e.target.value)}
+          onChange={(e) => handleDraftChange("nombre", e.target.value)}
         />
       </div>
       <div className="ipdj-field">
@@ -420,35 +443,12 @@ export default function Adminuserdashboard(): JSX.Element {
         <input
           type="text"
           value={displayLast}
-          onChange={(e) => handleDraftChange("lastName", e.target.value)}
+          onChange={(e) => handleDraftChange("apellido", e.target.value)}
         />
       </div>
       <div className="ipdj-field">
         <label>Correo</label>
-        <input
-          type="text"
-          value={draft.email ?? selectedUser.email}
-          onChange={(e) => handleDraftChange("email", e.target.value)}
-        />
-      </div>
-      <div className="ipdj-field">
-        <label>Teléfono</label>
-        <input
-          type="text"
-          value={draft.phone ?? selectedUser.phone}
-          onChange={(e) => handleDraftChange("phone", e.target.value)}
-        />
-      </div>
-      <div className="ipdj-field">
-        <label>Rol</label>
-        <select
-          value={displayRole}
-          onChange={(e) => handleDraftChange("role", e.target.value as Role)}
-        >
-          <option value="Cliente">Cliente</option>
-          <option value="Fotografo">Fotógrafo</option>
-          <option value="Admin">Admin</option>
-        </select>
+        <input type="text" disabled value={selectedUser.email} />
       </div>
 
       <button className="ipdj-btn-save" onClick={saveChanges}>
@@ -462,6 +462,8 @@ export default function Adminuserdashboard(): JSX.Element {
         </button>
       </div>
     </>
+  ) : (
+    <div>Seleccione un usuario para editar</div>
   );
 
   return (
