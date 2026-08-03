@@ -27,14 +27,16 @@ export const authService = {
 
     async register(data: RegisterClientInput): Promise<UsuarioDTO> {
         const response = await apiClient.post<RegisterApiResponse>(
-            "/auth/register",
+            "/auth/registro",
             data,
         );
 
         const body = response.data;
         if (!body.success) {
+            console.error(body);
             throw new Error(body.message);
         }
+        console.error(body);
         return body.data;
     },
 };
