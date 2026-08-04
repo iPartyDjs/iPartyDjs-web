@@ -34,6 +34,52 @@ function getErrorMessage(error: unknown): string {
   return "Ocurrió un error. Intenta de nuevo.";
 }
 
+const STATUS_COLORS: Record<EstadoFotografia, { bg: string; color: string }> = {
+  visible: { bg: "rgba(16, 185, 129, 0.16)", color: "#6ee7b7" },
+  pendiente: { bg: "rgba(212, 175, 55, 0.16)", color: "#e8c97a" },
+  rechazada: { bg: "rgba(244, 63, 94, 0.16)", color: "#fca5a5" },
+  baja: { bg: "rgba(161, 161, 170, 0.16)", color: "#a1a1aa" },
+};
+
+/**
+ * Badge de estado seguro para usarse DENTRO de una celda de tabla normal.
+ * A propósito NO usa la clase .status-pill (esa tiene position: absolute,
+ * pensada para superponerse sobre la miniatura en las tarjetas y el panel
+ * lateral — dentro de un <td> sin ancestro posicionado, se escapa a la
+ * esquina de la página).
+ */
+function StatusBadgeInline({ estado }: { estado: EstadoFotografia }) {
+  const resolved = resolveEstado(estado);
+  const { bg, color } = STATUS_COLORS[resolved];
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        background: bg,
+        color,
+        fontSize: "11px",
+        fontWeight: 600,
+        padding: "4px 10px",
+        borderRadius: "999px",
+      }}
+    >
+      {STATUS_LABELS[resolved]}
+    </span>
+  );
+}
+
+/**
+ * Si `estado` viene undefined/null o con un valor que no reconocemos
+ * (backend cambió algo, respuesta parcial, etc.), cae a "pendiente" en vez
+ * de dejar el badge vacío como se vio en captura — toda foto nace pendiente
+ * por default en el negocio, así que es el fallback correcto.
+ */
+function resolveEstado(
+  estado: EstadoFotografia | undefined | null,
+): EstadoFotografia {
+  return estado && STATUS_LABELS[estado] ? estado : "pendiente";
+}
+
 export default function AdminPhotosGallery() {
   const queryClient = useQueryClient();
 
@@ -56,10 +102,6 @@ export default function AdminPhotosGallery() {
   const [newDescripcion, setNewDescripcion] = useState("");
   const [newFile, setNewFile] = useState<File | null>(null);
 
-  // Modal de rechazo (motivo opcional)
-  const [rejectingId, setRejectingId] = useState<string | null>(null);
-  const [rejectMotivo, setRejectMotivo] = useState("");
-
   // Confirmación de baja (patrón doble-tap, consistente con el resto del panel)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null,
@@ -80,6 +122,14 @@ export default function AdminPhotosGallery() {
       listFotografias(statusFilter === "Todos" ? {} : { estado: statusFilter }),
   });
 
+  // Query aparte, siempre sin filtro, exclusiva para las tarjetas de stats —
+  // así "Total/Aprobadas/Pendientes/Rechazadas" no se van a 0 cuando filtras
+  // la tabla por un estado específico.
+  const statsQuery = useQuery({
+    queryKey: ["fotografias", "Todos"],
+    queryFn: () => listFotografias({}),
+  });
+
   const photos = useMemo(() => fotosQuery.data ?? [], [fotosQuery.data]);
 
   const filtered = useMemo(() => {
@@ -96,13 +146,21 @@ export default function AdminPhotosGallery() {
 
   const selected = photos.find((p) => p.id_fotografia === selectedId) ?? null;
 
+  const statsPhotos = useMemo(() => statsQuery.data ?? [], [statsQuery.data]);
+
   const stats = useMemo(() => {
-    const total = photos.length;
-    const visibles = photos.filter((p) => p.estado === "visible").length;
-    const pendientes = photos.filter((p) => p.estado === "pendiente").length;
-    const rechazadas = photos.filter((p) => p.estado === "rechazada").length;
+    const total = statsPhotos.length;
+    const visibles = statsPhotos.filter(
+      (p) => resolveEstado(p.estado) === "visible",
+    ).length;
+    const pendientes = statsPhotos.filter(
+      (p) => resolveEstado(p.estado) === "pendiente",
+    ).length;
+    const rechazadas = statsPhotos.filter(
+      (p) => resolveEstado(p.estado) === "rechazada",
+    ).length;
     return { total, visibles, pendientes, rechazadas };
-  }, [photos]);
+  }, [statsPhotos]);
 
   // -------- Mutaciones --------
   const invalidate = () =>
@@ -118,12 +176,9 @@ export default function AdminPhotosGallery() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) =>
-      rejectFotografia(id, { motivo }),
+    mutationFn: (id: string) => rejectFotografia(id, {}),
     onSuccess: () => {
       invalidate();
-      setRejectingId(null);
-      setRejectMotivo("");
       showToast("Fotografía rechazada.");
     },
     onError: (error) => showToast(getErrorMessage(error)),
@@ -310,7 +365,6 @@ export default function AdminPhotosGallery() {
           <option value="visible">Aprobadas</option>
           <option value="pendiente">Pendientes</option>
           <option value="rechazada">Rechazadas</option>
-          <option value="baja">Baja</option>
         </select>
       </div>
 
@@ -422,9 +476,7 @@ export default function AdminPhotosGallery() {
                       {p.titulo}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <span className={STATUS_CLASS[p.estado]}>
-                        {STATUS_LABELS[p.estado]}
-                      </span>
+                      <StatusBadgeInline estado={p.estado} />
                     </td>
                     <td style={{ padding: "12px 16px", color: "#a1a1aa" }}>
                       {new Date(p.created_at).toLocaleDateString("es-MX")}
@@ -433,7 +485,7 @@ export default function AdminPhotosGallery() {
                       style={{ padding: "12px 16px", textAlign: "center" }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {p.estado === "pendiente" ? (
+                      {resolveEstado(p.estado) === "pendiente" ? (
                         <div
                           style={{
                             display: "flex",
@@ -460,7 +512,10 @@ export default function AdminPhotosGallery() {
                             Aprobar
                           </button>
                           <button
-                            onClick={() => setRejectingId(p.id_fotografia)}
+                            onClick={() =>
+                              rejectMutation.mutate(p.id_fotografia)
+                            }
+                            disabled={rejectMutation.isPending}
                             style={{
                               background: "rgba(244, 63, 94, 0.2)",
                               color: "#fca5a5",
@@ -497,10 +552,10 @@ export default function AdminPhotosGallery() {
             >
               <div className="ipdj-photo-thumb">
                 <img src={p.url_imagen} alt={p.titulo} loading="lazy" />
-                <span className={STATUS_CLASS[p.estado]}>
-                  {STATUS_LABELS[p.estado]}
+                <span className={STATUS_CLASS[resolveEstado(p.estado)]}>
+                  {STATUS_LABELS[resolveEstado(p.estado)]}
                 </span>
-                {p.estado === "pendiente" && (
+                {resolveEstado(p.estado) === "pendiente" && (
                   <div
                     className="ipdj-photo-hover-actions"
                     onClick={(e) => e.stopPropagation()}
@@ -515,7 +570,7 @@ export default function AdminPhotosGallery() {
                     <button
                       className="quick-act reject"
                       title="Rechazar"
-                      onClick={() => setRejectingId(p.id_fotografia)}
+                      onClick={() => rejectMutation.mutate(p.id_fotografia)}
                     >
                       ✕
                     </button>
@@ -742,117 +797,6 @@ export default function AdminPhotosGallery() {
           </div>
         </div>
       )}
-
-      {rejectingId && (
-        <div
-          className="ipdj-modal"
-          style={{
-            display: "flex",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.6)",
-            zIndex: 1000,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#1e1e1e",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "380px",
-              maxWidth: "90%",
-            }}
-          >
-            <h3 style={{ marginBottom: "8px", color: "#fff" }}>
-              Rechazar fotografía
-            </h3>
-            <p
-              style={{
-                color: "#a1a1aa",
-                fontSize: "12.5px",
-                marginBottom: "14px",
-              }}
-            >
-              Motivo opcional (5–500 caracteres si lo escribes). El backend lo
-              valida pero actualmente no lo guarda en la base de datos.
-            </p>
-            <textarea
-              value={rejectMotivo}
-              onChange={(e) => setRejectMotivo(e.target.value)}
-              rows={3}
-              placeholder="Ej. La imagen no cumple con los estándares de calidad..."
-              style={{
-                width: "100%",
-                padding: "8px",
-                background: "#2a2a2a",
-                border: "1px solid #444",
-                color: "#fff",
-                borderRadius: "4px",
-                marginBottom: "14px",
-                resize: "vertical",
-              }}
-            />
-            {rejectMutation.isError && (
-              <p
-                style={{
-                  color: "#fca5a5",
-                  fontSize: "12px",
-                  marginBottom: "10px",
-                }}
-              >
-                {getErrorMessage(rejectMutation.error)}
-              </p>
-            )}
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setRejectingId(null);
-                  setRejectMotivo("");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "8px",
-                  background: "transparent",
-                  border: "1px solid #555",
-                  color: "#ccc",
-                  cursor: "pointer",
-                  borderRadius: "4px",
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                disabled={rejectMutation.isPending}
-                onClick={() =>
-                  rejectMutation.mutate({
-                    id: rejectingId,
-                    motivo: rejectMotivo.trim() || undefined,
-                  })
-                }
-                style={{
-                  flex: 1,
-                  padding: "8px",
-                  background: "rgba(244, 63, 94, 0.2)",
-                  color: "#fca5a5",
-                  border: "1px solid rgba(244, 63, 94, 0.3)",
-                  cursor: "pointer",
-                  borderRadius: "4px",
-                  fontWeight: 600,
-                }}
-              >
-                {rejectMutation.isPending ? "Rechazando..." : "Rechazar"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 
@@ -861,8 +805,8 @@ export default function AdminPhotosGallery() {
       <h3>Detalle de fotografía</h3>
       <div className="ipdj-photo-preview">
         <img src={selected.url_imagen} alt={selected.titulo} />
-        <span className={STATUS_CLASS[selected.estado]}>
-          {STATUS_LABELS[selected.estado]}
+        <span className={STATUS_CLASS[resolveEstado(selected.estado)]}>
+          {STATUS_LABELS[resolveEstado(selected.estado)]}
         </span>
       </div>
       <div className="ipdj-field">
