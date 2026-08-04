@@ -12,12 +12,16 @@ export default function RequireAdminAuth({
   children: React.ReactElement;
 }) {
   const token = useAuthStore((state) => state.token);
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user) as {
+    rol?: string;
+    rol_nombre?: string;
+  } | null;
 
-  // Verificamos si existe un usuario y su rol es de administración
-  // Nota: Ajusta los nombres de los roles ("ADMIN", "administrador", etc.) según tu base de datos / constants.
+  // Verificamos tanto 'rol_nombre' como 'rol' para evitar conflictos con la base de datos
+  const userRole = user?.rol_nombre || user?.rol || "";
   const isStaff =
-    user?.rol === "administrador" || user?.rol === "superadministrador";
+    userRole === "administrador" || userRole === "superadministrador";
+
   if (!token || !isStaff) {
     return <Navigate to="/admin/login" replace />;
   }

@@ -6,9 +6,13 @@ import type {
   RolDTO,
   UsuarioFiltersInput,
   PaginationInput,
+  RegisterEmployeeInput,
 } from "@ipartydjs/shared";
 
-export type GetUsersParams = UsuarioFiltersInput & PaginationInput;
+export type GetUsersParams = UsuarioFiltersInput &
+  PaginationInput & {
+    search?: string;
+  };
 
 export const getUsers = async (params: GetUsersParams) => {
   const query = new URLSearchParams();
@@ -25,9 +29,8 @@ export const getUsers = async (params: GetUsersParams) => {
 };
 
 export const getRoles = async () => {
-  const response = await apiClient.get<ApiResponse<RolDTO[]>>(
-    "/usuarios/roles",
-  );
+  const response =
+    await apiClient.get<ApiResponse<RolDTO[]>>("/usuarios/roles");
   return response.data;
 };
 
@@ -49,6 +52,14 @@ export const activateUser = async (id_usuario: string) => {
 export const deactivateUser = async (id_usuario: string) => {
   const response = await apiClient.patch<ApiResponse<UsuarioDTO>>(
     `/usuarios/${id_usuario}/desactivar`,
+  );
+  return response.data;
+};
+
+export const registerEmployee = async (data: RegisterEmployeeInput) => {
+  const response = await apiClient.post<ApiResponse<UsuarioDTO>>(
+    "/usuarios/",
+    data,
   );
   return response.data;
 };

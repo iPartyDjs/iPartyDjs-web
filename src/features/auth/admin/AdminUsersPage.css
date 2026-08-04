@@ -1,7 +1,6 @@
-/* =====================================================
+/* =====================================================  
    iPartyDJs — Admin Users Page
 ===================================================== */
-
 .admin-users-layout {
   --gold: #c9a84c;
   --gold-light: #e8c97a;
@@ -12,9 +11,10 @@
   --dark-2: #1e1e1e;
   --dark-3: #2a2a2a;
   --white: #f5f0e8;
-
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: var(--black);
   color: var(--white);
   font-family: "Montserrat", sans-serif;
@@ -83,9 +83,11 @@
 .admin-stat-value.tone-green {
   color: #7fd6a5;
 }
+
 .admin-stat-value.tone-blue {
   color: #7fb8e0;
 }
+
 .admin-stat-value.tone-muted {
   color: rgba(245, 240, 232, 0.55);
 }
@@ -403,7 +405,7 @@
   color: rgba(245, 240, 232, 0.4);
 }
 
-/* -------- Paginación -------- */
+/* -------- Paginación Corregida -------- */
 .admin-pagination {
   display: flex;
   align-items: center;
@@ -411,21 +413,30 @@
   padding: 14px 18px;
   font-size: 12px;
   color: rgba(245, 240, 232, 0.45);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .admin-pagination-pages {
   display: flex;
+  align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .admin-pagination-pages button {
-  width: 28px;
-  height: 28px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
   border-radius: 8px;
   border: 1px solid var(--dark-3);
   background: transparent;
   color: rgba(245, 240, 232, 0.6);
   font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition:
     border-color 300ms ease,
@@ -631,15 +642,16 @@
 @media (max-width: 960px) {
   .admin-users-layout {
     flex-direction: column;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
-
   .admin-edit-panel {
     width: 100%;
     min-width: 0;
     border-left: none;
     border-top: 1px solid rgba(201, 168, 76, 0.1);
   }
-
   .admin-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }

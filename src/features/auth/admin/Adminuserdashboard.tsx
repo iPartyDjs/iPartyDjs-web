@@ -1,16 +1,31 @@
 import { useState } from "react";
+import "./AdminUsersPage.css";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterEmployeeSchema } from "@ipartydjs/shared";
 import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
 import type { UsuarioDTO, RegisterEmployeeInput } from "@ipartydjs/shared";
+import {
+  getUsers,
+  getRoles,
+  updateUserRole,
+  activateUser,
+  deactivateUser,
+  registerEmployee,
+} from "../../../core/api/userApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type RolNombre =
   | "cliente"
   | "colaborador_fotografico"
   | "administrador"
   | "superadministrador";
+
+interface RolItem {
+  id_rol: string;
+  nombre: string;
+}
 
 const PAGE_SIZE = 5;
 
@@ -41,6 +56,7 @@ const ADMIN_ROUTES: Partial<Record<AdminNavKey, string>> = {
 
 export default function AdminUsersPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeNav, setActiveNav] = useState<AdminNavKey>("usuarios");
 
   const [search, setSearch] = useState("");
@@ -52,14 +68,52 @@ export default function AdminUsersPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Estados limpios sin advertencias de ESLint
-  const [users] = useState<UsuarioDTO[]>([]);
-  const [roles] = useState<{ id_rol: string; nombre: string }[]>([]);
-  const isLoading = false;
-  const isError = false;
+  // Consulta de usuarios con TanStack Query
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    isError: isErrorUsers,
+  } = useQuery({
+    queryKey: ["admin-users", page, PAGE_SIZE, search, rolFilter, estadoFilter],
+    queryFn: () =>
+      getUsers({
+        page,
+        limit: PAGE_SIZE,
+        search: search || undefined,
+        id_rol: rolFilter || undefined,
+        estado: estadoFilter || undefined,
+      }),
+  });
 
-  const total = users.length;
+  // Consulta de roles con TanStack Query
+  const { data: rolesData } = useQuery({
+    queryKey: ["admin-roles"],
+    queryFn: getRoles,
+  });
+
+  // Procesamiento seguro usando unknown en lugar de any
+  const rawUsersData = usersData as unknown as {
+    data?: {
+      data?: UsuarioDTO[];
+      total?: number;
+    };
+  };
+
+  const rawRolesData = rolesData as unknown as
+    | {
+        data?: RolItem[];
+      }
+    | RolItem[];
+
+  const users = rawUsersData?.data?.data ?? [];
+  const total = rawUsersData?.data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+  const roles = Array.isArray(rawRolesData)
+    ? rawRolesData
+    : (rawRolesData?.data ?? []);
+
+  const isLoading = isLoadingUsers;
+  const isError = isErrorUsers;
 
   const selectedUser =
     users.find((u) => u.id_usuario === selectedUserId) ?? null;
@@ -69,6 +123,38 @@ export default function AdminUsersPage() {
     window.setTimeout(() => setToast(null), 3000);
   };
 
+  // Mutaciones para actualizar el backend
+  const updateRoleMutation = useMutation({
+    mutationFn: ({
+      id_usuario,
+      id_rol,
+    }: {
+      id_usuario: string;
+      id_rol: string;
+    }) => updateUserRole(id_usuario, id_rol),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      showToast("Rol actualizado correctamente.");
+    },
+    onError: () => showToast("Error al actualizar el rol."),
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: activateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      showToast("Usuario reactivado.");
+    },
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: deactivateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      showToast("Usuario dado de baja.");
+    },
+  });
+
   const handleSelectUser = (user: UsuarioDTO) => {
     setSelectedUserId(user.id_usuario);
     setConfirmingDeactivate(false);
@@ -76,8 +162,7 @@ export default function AdminUsersPage() {
 
   const handleChangeRole = (id_rol: string) => {
     if (!selectedUser) return;
-    console.log(id_rol); // <-- Aquí lo usamos para que el pinche linter se calle el hocico
-    showToast("Rol actualizado correctamente.");
+    updateRoleMutation.mutate({ id_usuario: selectedUser.id_usuario, id_rol });
   };
 
   const handleToggleStatus = () => {
@@ -90,10 +175,14 @@ export default function AdminUsersPage() {
     }
 
     setConfirmingDeactivate(false);
-    showToast(activar ? "Usuario reactivado." : "Usuario dado de baja.");
+    if (activar) {
+      activateMutation.mutate(selectedUser.id_usuario);
+    } else {
+      deactivateMutation.mutate(selectedUser.id_usuario);
+    }
   };
 
-  // Helper seguro para obtener el nombre del rol desde el objeto o desde el string/id
+  // Helper seguro para obtener el nombre del rol
   const getRolNombre = (user: UsuarioDTO): RolNombre => {
     const u = user as unknown as {
       rol?: { nombre: string };
@@ -214,8 +303,8 @@ export default function AdminUsersPage() {
                         <td>
                           <div className="admin-user-cell">
                             <span className="admin-user-avatar">
-                              {user.nombre.charAt(0)}
-                              {user.apellido.charAt(0)}
+                              {user.nombre?.charAt(0)}
+                              {user.apellido?.charAt(0)}
                             </span>
                             <div>
                               <p className="admin-user-name">
@@ -300,8 +389,8 @@ export default function AdminUsersPage() {
 
             <div className="admin-edit-summary">
               <span className="admin-user-avatar admin-user-avatar--lg">
-                {selectedUser.nombre.charAt(0)}
-                {selectedUser.apellido.charAt(0)}
+                {selectedUser.nombre?.charAt(0)}
+                {selectedUser.apellido?.charAt(0)}
               </span>
               <div>
                 <p className="admin-user-name">
@@ -326,11 +415,13 @@ export default function AdminUsersPage() {
                 value={selectedUser.id_rol}
                 onChange={(e) => handleChangeRole(e.target.value)}
               >
-                {roles.map((rol) => (
-                  <option key={rol.id_rol} value={rol.id_rol}>
-                    {ROLE_LABELS[rol.nombre as RolNombre] ?? rol.nombre}
-                  </option>
-                ))}
+                {roles
+                  .filter((rol) => rol.nombre !== "cliente")
+                  .map((rol) => (
+                    <option key={rol.id_rol} value={rol.id_rol}>
+                      {ROLE_LABELS[rol.nombre as RolNombre] ?? rol.nombre}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -367,6 +458,7 @@ export default function AdminUsersPage() {
           onClose={() => setShowInviteModal(false)}
           onSuccess={() => {
             setShowInviteModal(false);
+            queryClient.invalidateQueries({ queryKey: ["admin-users"] });
             showToast("Colaborador registrado correctamente.");
           }}
         />
@@ -382,10 +474,11 @@ function InviteUserModal({
   onClose,
   onSuccess,
 }: {
-  roles: { id_rol: string; nombre: string }[];
+  roles: RolItem[];
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -394,9 +487,18 @@ function InviteUserModal({
     resolver: zodResolver(RegisterEmployeeSchema),
   });
 
-  const onSubmit = () => {
-    onSuccess();
+  const createMutation = useMutation({
+    mutationFn: (data: RegisterEmployeeInput) => registerEmployee(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      onSuccess();
+    },
+  });
+
+  const onSubmit = (data: RegisterEmployeeInput) => {
+    createMutation.mutate(data);
   };
+
   return (
     <div className="admin-modal-backdrop" onClick={onClose}>
       <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
@@ -445,11 +547,13 @@ function InviteUserModal({
               <option value="" disabled>
                 Selecciona un rol...
               </option>
-              {roles.map((rol) => (
-                <option key={rol.id_rol} value={rol.id_rol}>
-                  {rol.nombre}
-                </option>
-              ))}
+              {roles
+                .filter((rol) => rol.nombre !== "cliente")
+                .map((rol) => (
+                  <option key={rol.id_rol} value={rol.id_rol}>
+                    {ROLE_LABELS[rol.nombre as RolNombre] ?? rol.nombre}
+                  </option>
+                ))}
             </select>
             {errors.id_rol && (
               <span className="field-error">{errors.id_rol.message}</span>
@@ -464,8 +568,12 @@ function InviteUserModal({
             >
               Cancelar
             </button>
-            <button type="submit" className="btn-gold">
-              Crear cuenta
+            <button
+              type="submit"
+              className="btn-gold"
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? "Guardando..." : "Crear cuenta"}
             </button>
           </div>
         </form>

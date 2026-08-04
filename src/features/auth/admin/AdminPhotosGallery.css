@@ -1,15 +1,43 @@
-/* ---------- Main ---------- */
-.ipdj-main {
-  padding: 26px 30px;
-  overflow-y: auto;
-  border-right: 1px solid var(--dark-3);
+/* =====================================================  
+   iPartyDJs — Admin Photos Layout (Corrección Definitiva)
+===================================================== */
+
+.ipdj-photos-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  min-height: 100vh;
+  background: var(--black, #080808);
+  color: var(--white, #f5f0e8);
+  font-family: "Montserrat", sans-serif;
+  align-items: start;
+  width: 100%;
 }
+
+/* ---------- Main (Galería de Fotos) ---------- */
+.ipdj-main {
+  padding: 30px 48px;
+  border-right: 1px solid var(--dark-3);
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenedor interno para asegurar que el contenido flote simétricamente sin pegarse */
+.ipdj-main-inner {
+  width: 100%;
+  max-width: 900px; /* Controla el ancho máximo para que no se extienda de más a la derecha */
+  margin: 0 auto; /* Esto distribuye el espacio exactamente igual a ambos lados */
+}
+
 .ipdj-main-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 22px;
+  width: 100%;
 }
+
 .ipdj-main-header h2 {
   font-family: "Cormorant Garamond", serif;
   font-size: 24px;
@@ -17,11 +45,13 @@
   color: var(--white);
   margin: 0 0 4px;
 }
+
 .ipdj-main-header p {
   font-size: 12.5px;
   color: #8a8578;
   margin: 0;
 }
+
 .ipdj-btn-gold {
   background: linear-gradient(180deg, var(--gold-light), var(--gold));
   color: var(--black);
@@ -34,9 +64,12 @@
   cursor: pointer;
   letter-spacing: 0.2px;
   box-shadow: 0 4px 14px rgba(201, 168, 76, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   white-space: nowrap;
 }
+
 .ipdj-btn-gold:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(201, 168, 76, 0.28);
@@ -46,20 +79,24 @@
 .ipdj-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
 }
+
 .ipdj-stat-card {
   background: var(--dark-1);
   border: 1px solid var(--dark-3);
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 16px 12px;
   text-align: center;
   transition: border-color 0.15s ease;
 }
+
 .ipdj-stat-card:hover {
   border-color: var(--gold-dark);
 }
+
 .ipdj-stat-card .num {
   font-family: "Cormorant Garamond", serif;
   font-size: 30px;
@@ -68,15 +105,19 @@
   line-height: 1;
   margin-bottom: 6px;
 }
+
 .ipdj-stat-card.green .num {
-  color: var(--green);
+  color: var(--green, #7fd6a5);
 }
+
 .ipdj-stat-card.gold .num {
   color: var(--gold-light);
 }
+
 .ipdj-stat-card.red .num {
-  color: var(--red);
+  color: var(--red, #e08a8a);
 }
+
 .ipdj-stat-card .lbl {
   font-size: 10.5px;
   letter-spacing: 0.6px;
@@ -89,9 +130,13 @@
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
+  width: 100%;
 }
+
 .ipdj-search-box {
   flex: 1;
+  min-width: 220px;
   display: flex;
   align-items: center;
   background: var(--dark-1);
@@ -99,10 +144,12 @@
   border-radius: 8px;
   padding: 0 12px;
 }
+
 .ipdj-search-box svg {
   opacity: 0.6;
   flex-shrink: 0;
 }
+
 .ipdj-search-box input {
   background: transparent;
   border: none;
@@ -113,21 +160,12 @@
   padding: 9px 8px;
   width: 100%;
 }
+
 .ipdj-search-box input::placeholder {
   color: #6e6a61;
 }
-.ipdj-filter-select {
-  background: var(--dark-1);
-  border: 1px solid var(--dark-3);
-  color: #c7c2b8;
-  padding: 0 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: "Montserrat", sans-serif;
-  cursor: pointer;
-  outline: none;
-}
+
+.ipdj-filter-select,
 .ipdj-filter-btn {
   background: var(--dark-1);
   border: 1px solid var(--dark-3);
@@ -138,12 +176,17 @@
   font-weight: 500;
   font-family: "Montserrat", sans-serif;
   cursor: pointer;
-  white-space: nowrap;
+  outline: none;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+  white-space: nowrap;
 }
+
+.ipdj-filter-select:hover,
 .ipdj-filter-btn:hover {
   border-color: var(--gold-dark);
   color: var(--white);
@@ -152,38 +195,48 @@
 /* ---------- Photo grid ---------- */
 .ipdj-photo-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+  margin-bottom: 20px;
+  width: 100%;
 }
+
 .ipdj-photo-card {
   background: var(--dark-1);
   border: 1px solid var(--dark-3);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+  width: 100%;
 }
+
 .ipdj-photo-card:hover {
   border-color: var(--gold-dark);
   transform: translateY(-2px);
 }
+
 .ipdj-photo-card.selected {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold);
 }
+
 .ipdj-photo-thumb {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 10;
   background: var(--dark-2);
   overflow: hidden;
 }
+
 .ipdj-photo-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .status-pill {
   position: absolute;
   top: 8px;
@@ -194,14 +247,17 @@
   border-radius: 20px;
   backdrop-filter: blur(4px);
 }
+
 .status-pill.approved {
   background: rgba(111, 191, 115, 0.85);
   color: #0c1c0d;
 }
+
 .status-pill.pending {
   background: rgba(232, 201, 122, 0.9);
   color: #2a2005;
 }
+
 .status-pill.rejected {
   background: rgba(217, 108, 108, 0.9);
   color: #2a0c0c;
@@ -216,9 +272,11 @@
   opacity: 0;
   transition: opacity 0.15s ease;
 }
+
 .ipdj-photo-card:hover .ipdj-photo-hover-actions {
   opacity: 1;
 }
+
 .quick-act {
   width: 26px;
   height: 26px;
@@ -232,18 +290,21 @@
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
+
 .quick-act.approve {
-  background: var(--green);
+  background: var(--green, #7fd6a5);
   color: #0c1c0d;
 }
+
 .quick-act.reject {
-  background: var(--red);
+  background: var(--red, #e08a8a);
   color: #2a0c0c;
 }
 
 .ipdj-photo-info {
   padding: 10px 12px 12px;
 }
+
 .photo-title {
   font-size: 12.5px;
   font-weight: 600;
@@ -253,6 +314,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .photo-meta {
   font-size: 11px;
   color: #7a756b;
@@ -269,24 +331,29 @@
   border-radius: 10px;
 }
 
-/* Footer / pagination (compartido visualmente con Usuarios) */
+/* Footer / pagination */
 .ipdj-table-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 4px;
+  padding: 12px 4px;
+  margin-top: 10px;
+  width: 100%;
 }
+
 .ipdj-table-footer .count {
   font-size: 11.5px;
   color: #7a756b;
 }
+
 .ipdj-pagination {
   display: flex;
   gap: 6px;
 }
+
 .ipdj-page-btn {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   border: 1px solid var(--dark-3);
   background: var(--dark-2);
@@ -297,27 +364,36 @@
   align-items: center;
   justify-content: center;
 }
+
 .ipdj-page-btn.active {
   background: var(--gold);
   color: var(--black);
   font-weight: 700;
   border-color: var(--gold);
 }
+
 .ipdj-page-btn:hover:not(.active) {
   border-color: var(--gold-dark);
 }
 
-/* ---------- Edit / detail panel ---------- */
+/* ---------- Edit / Detail Panel (Derecho Fijo/Sticky) ---------- */
 .ipdj-edit-panel {
-  padding: 24px 24px;
-  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  padding: 24px;
+  background: var(--dark-1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
+
 .ipdj-edit-panel h3 {
   font-family: "Cormorant Garamond", serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--white);
-  margin: 0 0 18px;
+  margin: 0 0 16px;
 }
 
 .ipdj-photo-preview {
@@ -327,20 +403,23 @@
   margin-bottom: 20px;
   border: 1px solid var(--dark-3);
 }
+
 .ipdj-photo-preview img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
 }
+
 .ipdj-photo-preview .status-pill {
   top: 10px;
   left: 10px;
 }
 
 .ipdj-field {
-  margin-bottom: 15px;
+  margin-bottom: 14px;
 }
+
 .ipdj-field label {
   display: block;
   font-size: 10.5px;
@@ -350,6 +429,7 @@
   margin-bottom: 6px;
   font-weight: 600;
 }
+
 .ipdj-field input,
 .ipdj-field select {
   width: 100%;
@@ -361,12 +441,15 @@
   font-family: "Montserrat", sans-serif;
   font-size: 12.5px;
   outline: none;
+  box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
+
 .ipdj-field input:focus,
 .ipdj-field select:focus {
   border-color: var(--gold);
 }
+
 .ipdj-field input[readonly] {
   color: #8a8578;
   cursor: not-allowed;
@@ -387,29 +470,37 @@
   letter-spacing: 0.2px;
   transition: transform 0.15s ease;
 }
+
 .ipdj-btn-save:hover {
   transform: translateY(-1px);
 }
 
+/* Zona de riesgo al fondo del panel lateral */
 .ipdj-danger-zone {
-  margin-top: 28px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.ipdj-danger-box {
   padding: 16px;
   border: 1px solid rgba(217, 108, 108, 0.35);
   border-radius: 10px;
   background: rgba(217, 108, 108, 0.05);
 }
-.ipdj-danger-zone .dz-title {
+
+.ipdj-danger-box .dz-title {
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--red);
+  color: var(--red, #e08a8a);
   margin-bottom: 10px;
   letter-spacing: 0.3px;
 }
+
 .ipdj-btn-danger {
   width: 100%;
   background: transparent;
   border: 1px solid rgba(217, 108, 108, 0.5);
-  color: var(--red);
+  color: var(--red, #e08a8a);
   padding: 9px;
   border-radius: 7px;
   font-size: 12px;
@@ -418,16 +509,39 @@
   cursor: pointer;
   transition: background 0.15s ease;
 }
+
 .ipdj-btn-danger:hover {
   background: rgba(217, 108, 108, 0.12);
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 900px) {
-  .ipdj-photo-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1024px) {
+  .ipdj-photos-layout {
+    grid-template-columns: 1fr;
   }
+
+  .ipdj-main {
+    border-right: none;
+    padding: 30px 20px;
+  }
+
+  .ipdj-edit-panel {
+    position: static;
+    min-height: auto;
+    border-top: 1px solid var(--dark-3);
+  }
+
   .ipdj-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .ipdj-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .ipdj-photo-grid {
+    grid-template-columns: 1fr;
   }
 }

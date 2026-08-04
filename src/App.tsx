@@ -44,6 +44,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/registro" element={<Register />} />
           <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
         </Route>
 
         {/* Rutas privadas — panel CLIENTE */}
@@ -59,6 +60,15 @@ function App() {
         {/* Rutas privadas — panel ADMIN */}
         <Route
           path="/dashboard/admin"
+          element={
+            <RequireAdminAuth>
+              <AdminUsersDashboard />
+            </RequireAdminAuth>
+          }
+        />
+
+        <Route
+          path="/dashboard/admin/usuarios"
           element={
             <RequireAdminAuth>
               <AdminUsersDashboard />

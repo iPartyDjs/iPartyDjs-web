@@ -18,7 +18,8 @@ interface LoginResponseData {
     nombre: string;
     apellido: string;
     email: string;
-    rol: string;
+    rol?: string;
+    rol_nombre?: string;
   };
 }
 
@@ -63,7 +64,9 @@ export default function AdminLogin() {
       );
 
       const { token, usuario } = data.data;
-      if (!["administrador", "superadministrador"].includes(usuario.rol)) {
+      const userRole = usuario.rol_nombre || usuario.rol || "";
+
+      if (!["administrador", "superadministrador"].includes(userRole)) {
         showAlert({
           type: "error",
           message: "Esta cuenta no tiene acceso al panel de administración.",
@@ -75,7 +78,7 @@ export default function AdminLogin() {
       setSuccess(true);
       setAuth(token, usuario as unknown as Parameters<typeof setAuth>[1]);
 
-      navigate("/admin/dashboard");
+      navigate("/dashboard/admin");
     } catch (error) {
       let message = "No pudimos iniciar sesión. Intenta de nuevo.";
       if (isAxiosError(error)) {
