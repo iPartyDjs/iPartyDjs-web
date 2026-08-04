@@ -56,7 +56,11 @@
 /* -------- Card principal -------- */
 .admin-login-card {
   width: 100%;
-  background: linear-gradient(180deg, rgba(30, 30, 30, 0.72), rgba(8, 8, 8, 0.88));
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 30, 0.72),
+    rgba(8, 8, 8, 0.88)
+  );
   border: 1px solid rgba(201, 168, 76, 0.2);
   border-radius: 20px;
   padding: 38px 34px;
@@ -129,7 +133,9 @@
   font-size: 14px;
   color: var(--white);
   outline: none;
-  transition: border-color 300ms ease, box-shadow 300ms ease;
+  transition:
+    border-color 300ms ease,
+    box-shadow 300ms ease;
 }
 
 .admin-field input::placeholder {
@@ -217,7 +223,9 @@
   border: none;
   font-size: 12.5px;
   cursor: pointer;
-  transition: color 300ms ease, opacity 300ms ease;
+  transition:
+    color 300ms ease,
+    opacity 300ms ease;
 }
 
 .admin-link:hover {
@@ -242,7 +250,9 @@
   padding: 13px 26px;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 300ms ease, box-shadow 300ms ease;
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease;
 }
 
 .btn-gold:hover:not(:disabled) {

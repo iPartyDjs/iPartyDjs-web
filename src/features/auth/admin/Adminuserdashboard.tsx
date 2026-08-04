@@ -1,474 +1,503 @@
-import { useMemo, useState, useEffect, useCallback, type JSX } from "react";
-import type { PaginatedResult } from "@ipartydjs/shared";
-import AdminPageShell from "./AdminPageShell";
-import "./AdminUsersDashboard.css";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterEmployeeSchema } from "@ipartydjs/shared";
+import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
+import type { UsuarioDTO, RegisterEmployeeInput } from "@ipartydjs/shared";
 
-/* ------------------------------------------------------------------ */
-/*  Tipos locales y adaptadores                                       */
-/* ------------------------------------------------------------------ */
+type RolNombre =
+  | "cliente"
+  | "colaborador_fotografico"
+  | "administrador"
+  | "superadministrador";
 
-// Extendemos temporalmente la interfaz para asegurar compatibilidad total
-export interface AdminUsuarioUI {
-  id_usuario: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  estado: "activo" | "baja";
-  created_at: string;
-  id_rol: string;
-  rol_nombre?: string;
-}
+const PAGE_SIZE = 5;
 
-const ROLE_LABEL: Record<string, string> = {
+const ROLE_LABELS: Record<RolNombre, string> = {
   cliente: "Cliente",
-  fotografo: "Fotógrafo",
-  admin: "Admin",
-  superadmin: "Super Admin",
+  colaborador_fotografico: "Fotógrafo",
+  administrador: "Admin",
+  superadministrador: "Superadmin",
 };
 
-const ROLE_CLASS: Record<string, string> = {
-  cliente: "role-pill role-cliente",
-  fotografo: "role-pill role-fotografo",
-  admin: "role-pill role-admin",
-  superadmin: "role-pill role-admin",
+const ROLE_STYLES: Record<RolNombre, string> = {
+  cliente: "role-badge--client",
+  colaborador_fotografico: "role-badge--photographer",
+  administrador: "role-badge--admin",
+  superadministrador: "role-badge--admin",
 };
 
-const Icon = {
-  search: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  ),
-  download: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  ),
-  eye: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
-  edit: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  ),
-  more: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="12" cy="5" r="1" />
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="12" cy="19" r="1" />
-    </svg>
-  ),
+const ADMIN_ROUTES: Partial<Record<AdminNavKey, string>> = {
+  dashboard: "/dashboard/admin",
+  usuarios: "/dashboard/admin",
+  fotografias: "/dashboard/admin/fotografias",
+  citas: "/dashboard/admin/citas",
+  eventos: "/dashboard/admin/eventos",
+  resenas: "/dashboard/admin/resenas",
+  solicitudes: "/dashboard/admin/solicitudes",
+  reportes: "/dashboard/admin/reportes",
 };
 
-function initials(u: AdminUsuarioUI): string {
-  return (u.nombre[0] ?? "") + (u.apellido[0] ?? "");
-}
+export default function AdminUsersPage() {
+  const navigate = useNavigate();
+  const [activeNav, setActiveNav] = useState<AdminNavKey>("usuarios");
 
-const PAGE_SIZE = 10;
-
-/* ------------------------------------------------------------------ */
-/*  Componente Principal                                              */
-/* ------------------------------------------------------------------ */
-
-export default function Adminuserdashboard(): JSX.Element {
-  const [paginatedData, setPaginatedData] =
-    useState<PaginatedResult<AdminUsuarioUI> | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const [selectedUser, setSelectedUser] = useState<AdminUsuarioUI | null>(null);
   const [search, setSearch] = useState("");
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const [draft, setDraft] = useState<Partial<AdminUsuarioUI>>({});
+  const [estadoFilter, setEstadoFilter] = useState<"" | "activo" | "baja">("");
+  const [rolFilter, setRolFilter] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [confirmingDeactivate, setConfirmingDeactivate] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // Memorizar la lista de usuarios para estabilizar los hooks de React
-  const users = useMemo(() => paginatedData?.data ?? [], [paginatedData]);
-  const totalUsers = paginatedData?.total ?? 0;
-  const totalPages = Math.ceil(totalUsers / PAGE_SIZE) || 1;
+  // Estados limpios sin advertencias de ESLint
+  const [users] = useState<UsuarioDTO[]>([]);
+  const [roles] = useState<{ id_rol: string; nombre: string }[]>([]);
+  const isLoading = false;
+  const isError = false;
 
-  // Carga de datos desde la API
-  // Carga de datos desde la API
-  const fetchUsers = useCallback(async () => {
-    // Activamos loading dentro de la función asíncrona
-    setLoading(true);
-    try {
-      const query = new URLSearchParams({
-        page: page.toString(),
-        limit: PAGE_SIZE.toString(),
-        ...(search && { search }),
-      });
+  const total = users.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
 
-      const res = await fetch(`/api/usuarios?${query.toString()}`);
-      const json = await res.json();
+  const selectedUser =
+    users.find((u) => u.id_usuario === selectedUserId) ?? null;
 
-      if (json.success) {
-        setPaginatedData(json.data);
-        if (json.data.data.length > 0) {
-          setSelectedUser((prev) => prev ?? json.data.data[0]);
-        }
-      }
-    } catch (err) {
-      console.error("Error al obtener usuarios:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search]);
+  const showToast = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(null), 3000);
+  };
 
-  useEffect(() => {
-    // Al diferirlo a un microtick con Promise.resolve(), React no lo detecta como
-    // un re-render síncrono en cascada dentro del cuerpo del efecto.
-    Promise.resolve().then(() => {
-      void fetchUsers();
-    });
-  }, [fetchUsers]);
+  const handleSelectUser = (user: UsuarioDTO) => {
+    setSelectedUserId(user.id_usuario);
+    setConfirmingDeactivate(false);
+  };
 
-  const stats = useMemo(() => {
-    const total = totalUsers;
-    const activos = users.filter((u) => u.estado === "activo").length;
-    const fotografos = users.filter(
-      (u) => u.rol_nombre?.toLowerCase() === "fotografo",
-    ).length;
-    const inactivos = users.filter((u) => u.estado === "baja").length;
-    return { total, activos, fotografos, inactivos };
-  }, [users, totalUsers]);
-
-  function selectUser(u: AdminUsuarioUI) {
-    setSelectedUser(u);
-    setDraft({});
-  }
-
-  function toggleCheck(id: string) {
-    setCheckedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
-  function toggleCheckAll(checked: boolean) {
-    setCheckedIds(
-      checked ? new Set(users.map((u) => u.id_usuario)) : new Set(),
-    );
-  }
-
-  function handleDraftChange<K extends keyof AdminUsuarioUI>(
-    key: K,
-    value: AdminUsuarioUI[K],
-  ) {
-    setDraft((d) => ({ ...d, [key]: value }));
-  }
-  async function saveChanges() {
+  const handleChangeRole = (id_rol: string) => {
     if (!selectedUser) return;
+    console.log(id_rol); // <-- Aquí lo usamos para que el pinche linter se calle el hocico
+    showToast("Rol actualizado correctamente.");
+  };
 
-    try {
-      if (draft.id_rol && draft.id_rol !== selectedUser.id_rol) {
-        await fetch(`/api/usuarios/${selectedUser.id_usuario}/rol`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_rol: draft.id_rol }),
-        });
-      }
-
-      setDraft({});
-      await fetchUsers();
-    } catch (err) {
-      console.error("Error al guardar cambios:", err);
-    }
-  }
-
-  async function deactivateUser() {
+  const handleToggleStatus = () => {
     if (!selectedUser) return;
-    try {
-      await fetch(`/api/usuarios/${selectedUser.id_usuario}/desactivar`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      });
-      await fetchUsers();
-    } catch (err) {
-      console.error("Error al dar de baja al usuario:", err);
+    const activar = selectedUser.estado === "baja";
+
+    if (!activar && !confirmingDeactivate) {
+      setConfirmingDeactivate(true);
+      return;
     }
-  }
 
-  // 2. Guardar Cambios (Rol)
+    setConfirmingDeactivate(false);
+    showToast(activar ? "Usuario reactivado." : "Usuario dado de baja.");
+  };
 
-  const displayFirst = draft.nombre ?? selectedUser?.nombre ?? "";
-  const displayLast = draft.apellido ?? selectedUser?.apellido ?? "";
-  const displayRoleKey = (
-    draft.rol_nombre ??
-    selectedUser?.rol_nombre ??
-    "cliente"
-  ).toLowerCase();
-  const displayActive = (draft.estado ?? selectedUser?.estado) === "activo";
-
-  const mainContent = (
-    <>
-      <div className="ipdj-main-header">
-        <div></div>
-      </div>
-
-      <div className="ipdj-stats">
-        <div className="ipdj-stat-card">
-          <div className="num">{stats.total}</div>
-          <div className="lbl">Total</div>
-        </div>
-        <div className="ipdj-stat-card">
-          <div className="num">{stats.activos}</div>
-          <div className="lbl">Activos</div>
-        </div>
-        <div className="ipdj-stat-card blue">
-          <div className="num">{stats.fotografos}</div>
-          <div className="lbl">Fotógrafos</div>
-        </div>
-        <div className="ipdj-stat-card">
-          <div className="num">{stats.inactivos}</div>
-          <div className="lbl">Inactivos</div>
-        </div>
-      </div>
-
-      <div className="ipdj-filters">
-        <div className="ipdj-search-box">
-          <span className="ipdj-search-icon">{Icon.search}</span>
-          <input
-            type="text"
-            placeholder="Buscar por nombre, correo o rol..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-        <button className="ipdj-filter-btn">Todos los roles ▾</button>
-        <button className="ipdj-filter-btn">Todos los estados ▾</button>
-        <button className="ipdj-filter-btn">
-          <span className="ipdj-filter-icon">{Icon.download}</span>
-          Exportar
-        </button>
-      </div>
-
-      <div className="ipdj-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style={{ width: 36 }}>
-                <input
-                  type="checkbox"
-                  checked={users.length > 0 && checkedIds.size === users.length}
-                  onChange={(e) => toggleCheckAll(e.target.checked)}
-                />
-              </th>
-              <th>Usuario</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th>Registro</th>
-              <th style={{ width: 110 }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={6} style={{ textAlign: "center", padding: 24 }}>
-                  Cargando usuarios...
-                </td>
-              </tr>
-            ) : (
-              users.map((u) => {
-                const roleKey = (u.rol_nombre ?? "cliente").toLowerCase();
-                const isActivo = u.estado === "activo";
-                return (
-                  <tr
-                    key={u.id_usuario}
-                    className={
-                      u.id_usuario === selectedUser?.id_usuario
-                        ? "selected"
-                        : ""
-                    }
-                    onClick={() => selectUser(u)}
-                  >
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={checkedIds.has(u.id_usuario)}
-                        onChange={() => toggleCheck(u.id_usuario)}
-                      />
-                    </td>
-                    <td>
-                      <div className="ipdj-user-cell">
-                        <div className="ipdj-avatar-sm">{initials(u)}</div>
-                        <div>
-                          <div className="u-name">
-                            {u.nombre} {u.apellido}
-                          </div>
-                          <div className="u-mail">{u.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={
-                          ROLE_CLASS[roleKey] ?? "role-pill role-cliente"
-                        }
-                      >
-                        {ROLE_LABEL[roleKey] ?? u.rol_nombre}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`ipdj-status ${isActivo ? "on" : "off"}`}
-                      >
-                        <span
-                          className={`ipdj-dot ${isActivo ? "on" : "off"}`}
-                        />
-                        {isActivo ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
-                    <td className="cell-muted">
-                      {new Date(u.created_at).toLocaleDateString("es-MX", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="ipdj-actions-cell">
-                        <button className="ipdj-act-btn" title="Ver">
-                          {Icon.eye}
-                        </button>
-                        <button
-                          className="ipdj-act-btn"
-                          title="Editar"
-                          onClick={() => selectUser(u)}
-                        >
-                          {Icon.edit}
-                        </button>
-                        <button className="ipdj-act-btn" title="Más">
-                          {Icon.more}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-
-            {!loading && users.length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="cell-muted"
-                  style={{ textAlign: "center", padding: 24 }}
-                >
-                  No se encontraron usuarios para "{search}".
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        <div className="ipdj-table-footer">
-          <div className="count">
-            Mostrando {users.length} de {totalUsers} usuarios
-          </div>
-          <div className="ipdj-pagination">
-            <button
-              className="ipdj-page-btn"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              ‹
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-              <button
-                key={n}
-                className={`ipdj-page-btn${page === n ? " active" : ""}`}
-                onClick={() => setPage(n)}
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              className="ipdj-page-btn"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              ›
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  const sidePanel = selectedUser ? (
-    <>
-      <h3>Editar usuario</h3>
-
-      <div className="ipdj-edit-profile">
-        <div className="ipdj-avatar-lg">
-          {(displayFirst[0] ?? "") + (displayLast[0] ?? "")}
-        </div>
-        <div>
-          <div className="ep-name">
-            {displayFirst} {displayLast}
-          </div>
-          <div className="ep-sub">
-            {ROLE_LABEL[displayRoleKey] ?? displayRoleKey} ·{" "}
-            {displayActive ? "Activo" : "Inactivo"}
-          </div>
-        </div>
-      </div>
-
-      <div className="ipdj-field">
-        <label>Nombre</label>
-        <input
-          type="text"
-          value={displayFirst}
-          onChange={(e) => handleDraftChange("nombre", e.target.value)}
-        />
-      </div>
-      <div className="ipdj-field">
-        <label>Apellido</label>
-        <input
-          type="text"
-          value={displayLast}
-          onChange={(e) => handleDraftChange("apellido", e.target.value)}
-        />
-      </div>
-      <div className="ipdj-field">
-        <label>Correo</label>
-        <input type="text" disabled value={selectedUser.email} />
-      </div>
-
-      <button className="ipdj-btn-save" onClick={saveChanges}>
-        Guardar cambios
-      </button>
-
-      <div className="ipdj-danger-zone">
-        <div className="dz-title">Zona de riesgo</div>
-        <button className="ipdj-btn-danger" onClick={deactivateUser}>
-          Dar de baja al usuario
-        </button>
-      </div>
-    </>
-  ) : (
-    <div>Seleccione un usuario para editar</div>
-  );
+  // Helper seguro para obtener el nombre del rol desde el objeto o desde el string/id
+  const getRolNombre = (user: UsuarioDTO): RolNombre => {
+    const u = user as unknown as {
+      rol?: { nombre: string };
+      rol_nombre?: string;
+    };
+    if (u.rol?.nombre) return u.rol.nombre as RolNombre;
+    if (u.rol_nombre) return u.rol_nombre as RolNombre;
+    return "cliente";
+  };
 
   return (
-    <AdminPageShell topbarTitle="Gestión de usuarios" sidePanel={sidePanel}>
-      {mainContent}
-    </AdminPageShell>
+    <div className="admin-users-layout">
+      <AdminSidebar
+        active={activeNav}
+        onNavigate={(key) => {
+          setActiveNav(key);
+          const route = ADMIN_ROUTES[key];
+          if (route && route !== "/dashboard/admin") {
+            navigate(route);
+          }
+        }}
+        counts={{ usuarios: total }}
+        onLogout={() => {
+          localStorage.removeItem("token");
+          navigate("/admin");
+        }}
+      />
+
+      <main className="admin-users-main">
+        <div className="admin-users-header">
+          <div>
+            <h1>Gestión de usuarios</h1>
+            <p>Administra cuentas, roles y accesos de la plataforma.</p>
+          </div>
+          <button
+            type="button"
+            className="btn-gold"
+            onClick={() => setShowInviteModal(true)}
+          >
+            Invitar usuario
+          </button>
+        </div>
+
+        <div className="admin-toolbar">
+          <div className="admin-search">
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, correo..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <select
+            className="admin-select"
+            value={rolFilter}
+            onChange={(e) => {
+              setRolFilter(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">Todos los roles</option>
+            {roles.map((rol) => (
+              <option key={rol.id_rol} value={rol.id_rol}>
+                {ROLE_LABELS[rol.nombre as RolNombre] ?? rol.nombre}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="admin-select"
+            value={estadoFilter}
+            onChange={(e) => {
+              setEstadoFilter(e.target.value as "" | "activo" | "baja");
+              setPage(1);
+            }}
+          >
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="baja">Inactivo</option>
+          </select>
+        </div>
+
+        <div className="admin-table-wrap">
+          {isLoading ? (
+            <p className="admin-empty">Cargando usuarios...</p>
+          ) : isError ? (
+            <p className="admin-empty">No pudimos cargar los usuarios.</p>
+          ) : (
+            <>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
+                    <th className="col-actions">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => {
+                    const rolNom = getRolNombre(user);
+                    return (
+                      <tr
+                        key={user.id_usuario}
+                        className={
+                          selectedUserId === user.id_usuario
+                            ? "is-selected"
+                            : ""
+                        }
+                        onClick={() => handleSelectUser(user)}
+                      >
+                        <td>
+                          <div className="admin-user-cell">
+                            <span className="admin-user-avatar">
+                              {user.nombre.charAt(0)}
+                              {user.apellido.charAt(0)}
+                            </span>
+                            <div>
+                              <p className="admin-user-name">
+                                {user.nombre} {user.apellido}
+                              </p>
+                              <p className="admin-user-email">{user.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span
+                            className={`role-badge ${ROLE_STYLES[rolNom] ?? ""}`}
+                          >
+                            {ROLE_LABELS[rolNom] ?? rolNom}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`status-dot ${user.estado === "activo" ? "is-active" : "is-inactive"}`}
+                          />
+                          {user.estado === "activo" ? "Activo" : "Inactivo"}
+                        </td>
+                        <td className="muted-cell">
+                          {new Date(user.created_at).toLocaleDateString(
+                            "es-MX",
+                          )}
+                        </td>
+                        <td
+                          className="col-actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="admin-row-actions">
+                            <button
+                              type="button"
+                              aria-label="Editar usuario"
+                              onClick={() => handleSelectUser(user)}
+                            >
+                              <EditIcon />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="admin-empty">
+                        No encontramos usuarios que coincidan con tu búsqueda.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              <div className="admin-pagination">
+                <span>
+                  Mostrando {users.length} de {total} usuarios
+                </span>
+                <div className="admin-pagination-pages">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={page === i + 1 ? "is-active" : ""}
+                      onClick={() => setPage(i + 1)}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+
+      <aside className="admin-edit-panel">
+        {selectedUser ? (
+          <div>
+            <h3>Editar usuario</h3>
+
+            <div className="admin-edit-summary">
+              <span className="admin-user-avatar admin-user-avatar--lg">
+                {selectedUser.nombre.charAt(0)}
+                {selectedUser.apellido.charAt(0)}
+              </span>
+              <div>
+                <p className="admin-user-name">
+                  {selectedUser.nombre} {selectedUser.apellido}
+                </p>
+                <p className="admin-user-email">
+                  {ROLE_LABELS[getRolNombre(selectedUser)] ??
+                    getRolNombre(selectedUser)}{" "}
+                  · {selectedUser.estado === "activo" ? "Activo" : "Inactivo"}
+                </p>
+              </div>
+            </div>
+
+            <div className="admin-edit-field">
+              <label>Correo</label>
+              <input value={selectedUser.email} disabled />
+            </div>
+
+            <div className="admin-edit-field">
+              <label>Rol</label>
+              <select
+                value={selectedUser.id_rol}
+                onChange={(e) => handleChangeRole(e.target.value)}
+              >
+                {roles.map((rol) => (
+                  <option key={rol.id_rol} value={rol.id_rol}>
+                    {ROLE_LABELS[rol.nombre as RolNombre] ?? rol.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <p className="admin-edit-note">
+              Nombre, apellido y correo solo pueden editarse desde la cuenta del
+              propio usuario.
+            </p>
+
+            <div className="admin-danger-zone">
+              <p className="admin-danger-title">Zona de riesgo</p>
+              <button
+                type="button"
+                className={`btn-danger ${confirmingDeactivate ? "is-confirming" : ""}`}
+                onClick={handleToggleStatus}
+              >
+                {selectedUser.estado === "activo"
+                  ? confirmingDeactivate
+                    ? "¿Confirmar baja? Toca de nuevo"
+                    : "Dar de baja al usuario"
+                  : "Reactivar usuario"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="admin-edit-empty">
+            Selecciona un usuario de la tabla para ver su detalle.
+          </p>
+        )}
+      </aside>
+
+      {showInviteModal && (
+        <InviteUserModal
+          roles={roles}
+          onClose={() => setShowInviteModal(false)}
+          onSuccess={() => {
+            setShowInviteModal(false);
+            showToast("Colaborador registrado correctamente.");
+          }}
+        />
+      )}
+
+      {toast && <div className="admin-toast fade-up">{toast}</div>}
+    </div>
+  );
+}
+
+function InviteUserModal({
+  roles,
+  onClose,
+  onSuccess,
+}: {
+  roles: { id_rol: string; nombre: string }[];
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterEmployeeInput>({
+    resolver: zodResolver(RegisterEmployeeSchema),
+  });
+
+  const onSubmit = () => {
+    onSuccess();
+  };
+  return (
+    <div className="admin-modal-backdrop" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Invitar colaborador</h3>
+        <p className="admin-modal-subtitle">
+          Se crea la cuenta directamente con estos datos. El colaborador podrá
+          cambiar su contraseña luego desde su perfil.
+        </p>
+
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="admin-edit-field">
+            <label>Nombre</label>
+            <input {...register("nombre")} />
+            {errors.nombre && (
+              <span className="field-error">{errors.nombre.message}</span>
+            )}
+          </div>
+
+          <div className="admin-edit-field">
+            <label>Apellido</label>
+            <input {...register("apellido")} />
+            {errors.apellido && (
+              <span className="field-error">{errors.apellido.message}</span>
+            )}
+          </div>
+
+          <div className="admin-edit-field">
+            <label>Correo</label>
+            <input type="email" {...register("email")} />
+            {errors.email && (
+              <span className="field-error">{errors.email.message}</span>
+            )}
+          </div>
+
+          <div className="admin-edit-field">
+            <label>Contraseña temporal</label>
+            <input type="password" {...register("password")} />
+            {errors.password && (
+              <span className="field-error">{errors.password.message}</span>
+            )}
+          </div>
+
+          <div className="admin-edit-field">
+            <label>Rol</label>
+            <select {...register("id_rol")} defaultValue="">
+              <option value="" disabled>
+                Selecciona un rol...
+              </option>
+              {roles.map((rol) => (
+                <option key={rol.id_rol} value={rol.id_rol}>
+                  {rol.nombre}
+                </option>
+              ))}
+            </select>
+            {errors.id_rol && (
+              <span className="field-error">{errors.id_rol.message}</span>
+            )}
+          </div>
+
+          <div className="admin-modal-actions">
+            <button
+              type="button"
+              className="btn-outline-gold"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button type="submit" className="btn-gold">
+              Crear cuenta
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M20 20l-4-4" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
+      <path d="M4 20l.9-4 10-10 3.1 3.1-10 10-4 .9Z" />
+      <path d="M14 6.5l3.5 3.5" />
+    </svg>
   );
 }

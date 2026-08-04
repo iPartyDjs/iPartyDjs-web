@@ -1,42 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { setAdminAuthenticated } from "./RequireAdminAuth";
-import "./Adminlogin.css";
+import { isAxiosError } from "axios";
+import { LoginSchema } from "@ipartydjs/shared";
+import { apiClient } from "../../../core/api/client";
+import { useAuthStore } from "../../../core/stores/auth.store";
+import "./AdminLogin.css";
 
-/* ---------------------------------------------------
-   Esquema de validación (Zod)
---------------------------------------------------- */
-const credentialsSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Ingresa tu correo.")
-    .email("Ingresa un correo electrónico válido."),
-  password: z
-    .string()
-    .min(1, "Ingresa tu contraseña.")
-    .min(8, "La contraseña debe tener al menos 8 caracteres."),
-});
-
+type LoginInput = z.infer<typeof LoginSchema>;
 type FieldErrors = Partial<Record<"email" | "password", string>>;
 type Alert = { type: "error" | "success"; message: string } | null;
 
-const ADMIN_ACCOUNT = { email: "admin@ipartydjs.com", password: "Admin1234" };
+interface LoginResponseData {
+  token: string;
+  usuario: {
+    id_usuario: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+    rol: string;
+  };
+}
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [touched, setTouched] = useState<{
-    email: boolean;
-    password: boolean;
-  }>({
-    email: false,
-    password: false,
-  });
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,33 +41,10 @@ export default function AdminLogin() {
     window.setTimeout(() => setAlert(null), 4000);
   };
 
-  /* ---------- Validación en tiempo real ---------- */
-  const validateField = (field: "email" | "password", value: string) => {
-    const result = credentialsSchema.shape[field].safeParse(value);
-    setFieldErrors((prev) => ({
-      ...prev,
-      [field]: result.success ? undefined : result.error.issues[0]?.message,
-    }));
-  };
-
-  // Validación independiente para Email
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (touched.email) validateField("email", email);
-  }, [email, touched.email]);
-
-  // Validación independiente para Password
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (touched.password) validateField("password", password);
-  }, [password, touched.password]);
-
-  /* ---------- Envío ---------- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched({ email: true, password: true });
 
-    const result = credentialsSchema.safeParse({ email, password });
+    const result = LoginSchema.safeParse({ email, password });
     if (!result.success) {
       const errors: FieldErrors = {};
       result.error.issues.forEach((issue) => {
@@ -85,26 +56,41 @@ export default function AdminLogin() {
     }
 
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setSubmitting(false);
+    try {
+      const { data } = await apiClient.post<{ data: LoginResponseData }>(
+        "/auth/login",
+        result.data satisfies LoginInput,
+      );
 
-    if (email !== ADMIN_ACCOUNT.email || password !== ADMIN_ACCOUNT.password) {
-      showAlert({
-        type: "error",
-        message:
-          "Correo o contraseña incorrectos. Verifica tus datos e intenta de nuevo.",
-      });
-      return;
+      const { token, usuario } = data.data;
+      if (!["administrador", "superadministrador"].includes(usuario.rol)) {
+        showAlert({
+          type: "error",
+          message: "Esta cuenta no tiene acceso al panel de administración.",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      setSuccess(true);
+      setAuth(token, usuario as unknown as Parameters<typeof setAuth>[1]);
+
+      navigate("/admin/dashboard");
+    } catch (error) {
+      let message = "No pudimos iniciar sesión. Intenta de nuevo.";
+      if (isAxiosError(error)) {
+        if (error.response?.status === 401 || error.response?.status === 400) {
+          message =
+            "Correo o contraseña incorrectos. Verifica tus datos e intenta de nuevo.";
+        } else if (error.response?.status === 429) {
+          message =
+            "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+        }
+      }
+      showAlert({ type: "error", message });
+    } finally {
+      setSubmitting(false);
     }
-
-    setAdminAuthenticated(true);
-    setSuccess(true);
-    showAlert({
-      type: "success",
-      message: "Bienvenida de nuevo. Redirigiendo al panel...",
-    });
-
-    window.setTimeout(() => navigate("/dashboard/admin"), 900);
   };
 
   return (
@@ -139,12 +125,6 @@ export default function AdminLogin() {
                 autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onBlur={() =>
-                  setTouched((prev) => ({
-                    ...prev,
-                    email: true,
-                  }))
-                }
                 className={fieldErrors.email ? "is-invalid" : ""}
                 placeholder="admin@ipartydjs.com"
               />
@@ -162,12 +142,6 @@ export default function AdminLogin() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onBlur={() =>
-                    setTouched((prev) => ({
-                      ...prev,
-                      password: true,
-                    }))
-                  }
                   className={fieldErrors.password ? "is-invalid" : ""}
                   placeholder="••••••••"
                 />
@@ -182,6 +156,20 @@ export default function AdminLogin() {
               {fieldErrors.password && (
                 <span className="field-error">{fieldErrors.password}</span>
               )}
+            </div>
+
+            <div className="admin-form-row">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                />
+                <span>Recordar este dispositivo</span>
+              </label>
+              <a href="#" className="admin-link">
+                ¿Olvidaste tu contraseña?
+              </a>
             </div>
 
             <button
@@ -200,16 +188,13 @@ export default function AdminLogin() {
 
         <p className="admin-footnote">
           ¿No eres administrador?{" "}
-          <Link to="/login">Ir al inicio de sesión de clientes</Link>
+          <a href="#">Ir al inicio de sesión de clientes</a>
         </p>
       </div>
     </div>
   );
 }
 
-/* ---------------------------------------------------
-   Iconos inline
---------------------------------------------------- */
 function LockIcon() {
   return (
     <svg

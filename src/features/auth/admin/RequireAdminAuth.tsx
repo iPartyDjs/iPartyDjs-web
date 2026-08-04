@@ -1,32 +1,26 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useAuthStore } from "@/core/stores/auth.store";
 
 /**
- * RequireAdminAuth
- * Envuelve cualquier ruta del panel admin. Si no hay sesión activa,
- * redirige a /admin/login conservando la ruta a la que intentaba entrar.
- *
- * NOTA: sessionStorage es un mock simple para desarrollo. En producción
- * reemplaza isAdminAuthenticated() por la verificación real de tu backend
- * (token JWT, cookie httpOnly, etc.).
+ * Envuelve cualquier ruta del panel admin. Si no hay token, o el rol del usuario
+ * no pertenece a la administración, redirige al login.
  */
-// eslint-disable-next-line react-refresh/only-export-components
-export function isAdminAuthenticated(): boolean {
-  return sessionStorage.getItem("ipartydjs_admin_auth") === "true";
-}
+export default function RequireAdminAuth({
+  children,
+}: {
+  children: React.ReactElement;
+}) {
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function setAdminAuthenticated(value: boolean) {
-  if (value) {
-    sessionStorage.setItem("ipartydjs_admin_auth", "true");
-  } else {
-    sessionStorage.removeItem("ipartydjs_admin_auth");
-  }
-}
-
-export default function RequireAdminAuth({ children }: { children: React.ReactElement }) {
-  if (!isAdminAuthenticated()) {
+  // Verificamos si existe un usuario y su rol es de administración
+  // Nota: Ajusta los nombres de los roles ("ADMIN", "administrador", etc.) según tu base de datos / constants.
+  const isStaff =
+    user?.rol === "administrador" || user?.rol === "superadministrador";
+  if (!token || !isStaff) {
     return <Navigate to="/admin/login" replace />;
   }
+
   return children;
 }
