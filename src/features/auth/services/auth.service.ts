@@ -1,4 +1,3 @@
-// src/features/auth/services/auth.service.ts
 import { apiClient } from "@/core/api/client";
 import type {
     LoginInput,

@@ -64,7 +64,7 @@ const STATUS_MAP: Record<string, string> = {
     Cancelada: "badge-red",
 };
 
-const MisCitas = () => {
+const MisCitasOld = () => {
     const [filter, setFilter] = useState<FilterType>("Todas");
 
     // Filtrado limpio y tipado para Próximas
@@ -222,4 +222,4 @@ const MisCitas = () => {
     );
 };
 
-export default MisCitas;
+export default MisCitasOld;
