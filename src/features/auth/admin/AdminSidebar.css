@@ -1,136 +1,210 @@
-/* ---------- Sidebar ---------- */
-.ipdj-sidebar {
+/* =====================================================
+   iPartyDJs — Admin Sidebar
+===================================================== */
+
+.admin-sidebar {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dark: #8b6914;
+  --black: #080808;
+  --black-soft: #111111;
+  --dark-1: #161616;
+  --dark-2: #1e1e1e;
+  --dark-3: #2a2a2a;
+  --white: #f5f0e8;
+
+  width: 248px;
+  min-width: 248px;
+  height: 100vh;
   background: var(--black-soft);
-  border-right: 1px solid var(--dark-3);
+  border-right: 1px solid rgba(201, 168, 76, 0.1);
   display: flex;
   flex-direction: column;
-  padding: 22px 0 18px;
-}
-.ipdj-brand {
-  padding: 0 22px 22px;
-  border-bottom: 1px solid var(--dark-3);
-  margin-bottom: 18px;
-}
-.ipdj-logo {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--white);
-}
-.ipdj-logo-accent {
-  color: var(--gold);
-}
-
-.ipdj-nav-section {
-  padding: 0 14px;
-  margin-bottom: 22px;
-}
-.ipdj-nav-label {
-  font-size: 10px;
-  letter-spacing: 1.4px;
-  color: #7a756b;
-  padding: 0 10px 8px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.ipdj-nav-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 10px;
-  border-radius: 6px;
-  color: #b9b4aa;
-  background: none;
-  border: none;
+  padding: 24px 16px;
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 2px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  position: relative;
-  text-align: left;
-  text-decoration: none;
-}
-.ipdj-nav-item:hover {
-  background: var(--dark-2);
   color: var(--white);
-}
-.ipdj-nav-item.active {
-  background: linear-gradient(90deg, rgba(201, 168, 76, 0.16), rgba(201, 168, 76, 0.03));
-  color: var(--gold-light);
-}
-.ipdj-nav-item.active::before {
-  content: "";
-  position: absolute;
-  left: -14px;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--gold);
-  border-radius: 0 3px 3px 0;
-}
-.ipdj-nav-label-wrap {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-.ipdj-nav-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  margin-right: 10px;
-  opacity: 0.85;
-}
-.ipdj-nav-icon svg {
-  width: 100%;
-  height: 100%;
-}
-.ipdj-badge {
-  background: var(--dark-3);
-  color: var(--white);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 20px;
-  min-width: 18px;
-  text-align: center;
-}
-.ipdj-nav-item.active .ipdj-badge {
-  background: var(--gold);
-  color: var(--black);
 }
 
-.ipdj-sidebar-footer {
-  margin-top: auto;
-  padding: 16px 22px 0;
-  border-top: 1px solid var(--dark-3);
+.admin-sidebar-logo {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 4px 8px 24px;
 }
-.ipdj-avatar-sm {
+
+.admin-sidebar-logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+}
+
+.admin-sidebar-logo-text {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.admin-sidebar-nav ul {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-sidebar-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(245, 240, 232, 0.35);
+  margin: 0 0 8px;
+  padding: 0 8px;
+}
+
+.admin-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(245, 240, 232, 0.6);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 300ms ease,
+    color 300ms ease;
+}
+
+.admin-nav-item:hover {
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--white);
+}
+
+.admin-nav-item.is-active {
+  background: rgba(201, 168, 76, 0.14);
+  color: var(--gold-light);
+}
+
+.admin-nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.admin-nav-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-nav-label {
+  flex: 1;
+}
+
+.admin-nav-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--black);
+  background: var(--gold-light);
+  border-radius: 999px;
+  padding: 1px 7px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.admin-nav-item--logout {
+  color: rgba(224, 138, 138, 0.75);
+}
+
+.admin-nav-item--logout:hover {
+  background: rgba(209, 106, 106, 0.1);
+  color: #e08a8a;
+}
+
+.admin-nav-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.admin-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 8px 4px;
+  border-top: 1px solid rgba(245, 240, 232, 0.08);
+  margin-top: 8px;
+}
+
+.admin-sidebar-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--dark-3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--gold-light);
-  border: 1px solid var(--dark-3);
+  background: var(--dark-2);
+  border: 1px solid rgba(201, 168, 76, 0.3);
   flex-shrink: 0;
 }
-.ipdj-sf-name {
-  font-size: 12.5px;
+
+.admin-sidebar-profile-name {
+  font-size: 13px;
   font-weight: 600;
+  margin: 0;
   color: var(--white);
 }
-.ipdj-sf-role {
-  font-size: 10.5px;
-  color: #8a8578;
+
+.admin-sidebar-profile-role {
+  font-size: 11px;
+  margin: 0;
+  color: rgba(245, 240, 232, 0.45);
+}
+
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 76px;
+    min-width: 76px;
+    padding: 20px 10px;
+  }
+
+  .admin-sidebar-logo-text,
+  .admin-nav-label,
+  .admin-nav-badge,
+  .admin-sidebar-group-label,
+  .admin-sidebar-profile-name,
+  .admin-sidebar-profile-role {
+    display: none;
+  }
+
+  .admin-nav-item {
+    justify-content: center;
+  }
+
+  .admin-sidebar-profile {
+    justify-content: center;
+  }
 }
