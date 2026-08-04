@@ -2,10 +2,9 @@ import { useMemo, useState, useEffect } from "react";
 import AdminPageShell from "./AdminPageShell";
 import "./AdminPhotosGallery.css";
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                             */
-/* ------------------------------------------------------------------ */
-
+/* ------------------------------------------------------------------ *
+ *  Types                                                             *
+ * ------------------------------------------------------------------ */
 type PhotoStatus = "Aprobada" | "Pendiente" | "Rechazada";
 
 interface PhotoRecord {
@@ -36,10 +35,9 @@ interface ApiPhotoItem {
     uploadedAt?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Mock data (swap for API data)                                     */
-/* ------------------------------------------------------------------ */
-
+/* ------------------------------------------------------------------ *
+ *  Mock data (swap for API data)                                     *
+ * ------------------------------------------------------------------ */
 const CATEGORIES = [
     "Bodas",
     "XV Años",
@@ -96,10 +94,9 @@ const STATUS_CLASS: Record<PhotoStatus, string> = {
 
 const PAGE_SIZE = 9;
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
-
+/* ------------------------------------------------------------------ *
+ *  Component                                                         *
+ * ------------------------------------------------------------------ */
 export default function AdminPhotosGallery() {
     const [photos, setPhotos] = useState<PhotoRecord[]>(PHOTOS);
     const [selectedId, setSelectedId] = useState<string>(PHOTOS[0].id);
@@ -108,16 +105,13 @@ export default function AdminPhotosGallery() {
         "Todos",
     );
     const [draft, setDraft] = useState<Partial<PhotoRecord>>({});
-
     // Estado para la paginación activa
     const [currentPage, setCurrentPage] = useState(1);
-
     // Estados para el Modal de Subida y su formulario
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
     const [newDescription, setNewDescription] = useState("");
     const [newFile, setNewFile] = useState<File | null>(null);
-
     // Estado para cambiar entre Vista de Cuadrícula (Grid) o Vista de Tabla
     const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
@@ -139,7 +133,6 @@ export default function AdminPhotosGallery() {
                     : Array.isArray(data)
                       ? data
                       : [];
-
                 if (rawData && rawData.length > 0) {
                     const mapped: PhotoRecord[] = rawData.map(
                         (item: ApiPhotoItem, idx: number) => ({
@@ -240,7 +233,6 @@ export default function AdminPhotosGallery() {
         setPhotos((prev) =>
             prev.map((p) => (p.id === id ? { ...p, status } : p)),
         );
-
         try {
             const dbStatus =
                 status === "Aprobada"
@@ -271,16 +263,55 @@ export default function AdminPhotosGallery() {
         setDraft((d) => ({ ...d, [key]: value }));
     }
 
-    function saveChanges() {
+    async function saveChanges() {
+        const updatedFields = { ...draft };
+
         setPhotos((prev) =>
-            prev.map((p) => (p.id === selected.id ? { ...p, ...draft } : p)),
+            prev.map((p) =>
+                p.id === selected.id ? { ...p, ...updatedFields } : p,
+            ),
         );
+
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL || "http://localhost:3000/api"}/fotografias/${selected.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token") || localStorage.getItem("auth_token") || ""}`,
+                    },
+                    body: JSON.stringify({
+                        titulo: updatedFields.title ?? selected.title,
+                        descripcion:
+                            updatedFields.description ?? selected.description,
+                        category: updatedFields.category ?? selected.category,
+                        eventName:
+                            updatedFields.eventName ?? selected.eventName,
+                    }),
+                },
+            );
+
+            if (response.ok) {
+                alert("¡Cambios guardados con éxito en la base de datos!");
+            } else {
+                const data = await response.json().catch(() => ({}));
+                alert(
+                    `Error al actualizar en el servidor: ${data.message || data.error || "No se pudo guardar"}`,
+                );
+            }
+        } catch (error) {
+            console.error("Error de red al actualizar:", error);
+            alert(
+                "Se actualizaron los cambios localmente, pero ocurrió un error de conexión con el servidor.",
+            );
+        }
+
         setDraft({});
     }
 
-    // FUNCIÓN DE ELIMINACIÓN ACTUALIZADA CON PETICIÓN HTTP DELETE
-    // FUNCIÓN DE ELIMINACIÓN SEGURA Y ROBUSTA
-    async function deletePhoto() {
+    // FUNCIÓN DE ELIMINACIÓN LIMPIA: Obliga a pegarle al servidor siempre por DELETE
+    async function deletePhoto(photoId = selected.id) {
         if (
             !confirm(
                 "¿Estás seguro de eliminar esta fotografía de forma permanente?",
@@ -288,22 +319,6 @@ export default function AdminPhotosGallery() {
         ) {
             return;
         }
-
-        const photoId = selected.id;
-
-        const isLocalOnly =
-            photoId.startsWith("p") || /^\d{10,}$/.test(photoId);
-
-        if (isLocalOnly) {
-            setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-            const remaining = photos.filter((p) => p.id !== photoId);
-            if (remaining.length > 0) {
-                setSelectedId(remaining[0].id);
-            }
-            alert("¡Fotografía eliminada localmente con éxito!");
-            return;
-        }
-
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_API_URL || "http://localhost:3000/api"}/fotografias/${photoId}`,
@@ -314,21 +329,19 @@ export default function AdminPhotosGallery() {
                     },
                 },
             );
-
             const contentType = response.headers.get("content-type");
             let data: Record<string, unknown> = {};
             if (contentType && contentType.includes("application/json")) {
                 data = await response.json();
             }
-
             if (response.ok) {
-                setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-
-                const remaining = photos.filter((p) => p.id !== photoId);
-                if (remaining.length > 0) {
-                    setSelectedId(remaining[0].id);
-                }
-
+                setPhotos((prev) => {
+                    const remaining = prev.filter((p) => p.id !== photoId);
+                    if (remaining.length > 0) {
+                        setSelectedId(remaining[0].id);
+                    }
+                    return remaining;
+                });
                 alert(
                     "¡Fotografía eliminada con éxito de la base de datos y de ImageKit!",
                 );
@@ -337,7 +350,6 @@ export default function AdminPhotosGallery() {
                     (typeof data.message === "string" ? data.message : null) ||
                     (typeof data.error === "string" ? data.error : null) ||
                     "No se pudo borrar la fotografía";
-
                 alert(`Error al eliminar: ${errorMsg}`);
             }
         } catch (error) {
@@ -354,12 +366,10 @@ export default function AdminPhotosGallery() {
             alert("Por favor selecciona una imagen.");
             return;
         }
-
         const formData = new FormData();
         formData.append("foto", newFile);
         formData.append("titulo", newTitle);
         formData.append("descripcion", newDescription);
-
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_API_URL || "http://localhost:3000/api"}/fotografias`,
@@ -371,16 +381,13 @@ export default function AdminPhotosGallery() {
                     body: formData,
                 },
             );
-
             const data = await response.json();
-
             if (response.ok) {
                 alert("¡Fotografía subida con éxito!");
                 setIsModalOpen(false);
                 setNewTitle("");
                 setNewDescription("");
                 setNewFile(null);
-
                 const item = data.data || data.fotografia || data;
                 const nuevaFoto: PhotoRecord = {
                     id: item.id || String(Date.now()),
@@ -398,11 +405,12 @@ export default function AdminPhotosGallery() {
                     status: "Pendiente",
                     uploadedAt: "Hace un momento",
                 };
-
                 setPhotos((prev) => [nuevaFoto, ...prev]);
                 setSelectedId(nuevaFoto.id);
             } else {
-                alert(`Error al subir: ${data.error || "Verifica los datos"}`);
+                alert(
+                    `Error al subir: ${data.error || data.message || "Verifica los datos"}`,
+                );
             }
         } catch (error) {
             console.error("Error de red:", error);
@@ -413,6 +421,7 @@ export default function AdminPhotosGallery() {
     const displayTitle = draft.title ?? selected.title;
     const displayCategory = (draft.category ?? selected.category) as string;
     const displayEvent = draft.eventName ?? selected.eventName;
+    const displayDescription = draft.description ?? selected.description ?? "";
     const displayStatus = (draft.status ?? selected.status) as PhotoStatus;
 
     const mainContent = (
@@ -488,7 +497,6 @@ export default function AdminPhotosGallery() {
                     </button>
                 </div>
             </div>
-
             <div className="ipdj-stats">
                 <div className="ipdj-stat-card">
                     <div className="num">{stats.total}</div>
@@ -507,7 +515,6 @@ export default function AdminPhotosGallery() {
                     <div className="lbl">Rechazadas</div>
                 </div>
             </div>
-
             <div className="ipdj-filters">
                 <div className="ipdj-search-box">
                     <svg
@@ -539,7 +546,6 @@ export default function AdminPhotosGallery() {
                     <option value="Rechazada">Rechazadas</option>
                 </select>
             </div>
-
             {viewMode === "table" ? (
                 <div
                     style={{
@@ -772,7 +778,6 @@ export default function AdminPhotosGallery() {
                                 <span className={STATUS_CLASS[p.status]}>
                                     {p.status}
                                 </span>
-
                                 <div
                                     className="ipdj-photo-hover-actions"
                                     onClick={(e) => e.stopPropagation()}
@@ -805,7 +810,6 @@ export default function AdminPhotosGallery() {
                             </div>
                         </div>
                     ))}
-
                     {paginatedPhotos.length === 0 && (
                         <div className="ipdj-photo-empty">
                             No se encontraron fotografías para “{search}”.
@@ -813,7 +817,6 @@ export default function AdminPhotosGallery() {
                     )}
                 </div>
             )}
-
             <div className="ipdj-table-footer">
                 <div className="count">
                     Mostrando del{" "}
@@ -838,7 +841,6 @@ export default function AdminPhotosGallery() {
                     >
                         ‹
                     </button>
-
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                         (page) => (
                             <button
@@ -850,7 +852,6 @@ export default function AdminPhotosGallery() {
                             </button>
                         ),
                     )}
-
                     <button
                         className="ipdj-page-btn"
                         disabled={currentPage === totalPages}
@@ -871,7 +872,6 @@ export default function AdminPhotosGallery() {
                     </button>
                 </div>
             </div>
-
             {isModalOpen && (
                 <div
                     className="ipdj-modal"
@@ -1031,20 +1031,28 @@ export default function AdminPhotosGallery() {
     const sidePanel = (
         <>
             <h3>Detalle de fotografía</h3>
-
             <div className="ipdj-photo-preview">
                 <img src={selected.url} alt={selected.title} />
                 <span className={STATUS_CLASS[displayStatus]}>
                     {displayStatus}
                 </span>
             </div>
-
             <div className="ipdj-field">
                 <label>Título</label>
                 <input
                     type="text"
                     value={displayTitle}
                     onChange={(e) => handleDraftChange("title", e.target.value)}
+                />
+            </div>
+            <div className="ipdj-field">
+                <label>Descripción</label>
+                <input
+                    type="text"
+                    value={displayDescription}
+                    onChange={(e) =>
+                        handleDraftChange("description", e.target.value)
+                    }
                 />
             </div>
             <div className="ipdj-field">
@@ -1096,14 +1104,15 @@ export default function AdminPhotosGallery() {
                 <label>Fecha de subida</label>
                 <input type="text" value={selected.uploadedAt} readOnly />
             </div>
-
             <button className="ipdj-btn-save" onClick={saveChanges}>
                 Guardar cambios
             </button>
-
             <div className="ipdj-danger-zone">
                 <div className="dz-title">Zona de riesgo</div>
-                <button className="ipdj-btn-danger" onClick={deletePhoto}>
+                <button
+                    className="ipdj-btn-danger"
+                    onClick={() => deletePhoto(selected.id)}
+                >
                     Eliminar fotografía
                 </button>
             </div>
