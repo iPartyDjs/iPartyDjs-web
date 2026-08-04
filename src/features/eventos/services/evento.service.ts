@@ -4,10 +4,13 @@ import type {
     CreateEventoInput,
     UpdateEventoInput,
     ApiResponse,
+    EstadoEvento,
+    PaginatedResult,
 } from "@ipartydjs/shared";
 
 type EventoResponse = ApiResponse<EventoDTO>;
 type EventoListResponse = ApiResponse<EventoDTO[]>;
+type EventoPaginatedResponse = ApiResponse<PaginatedResult<EventoDTO>>;
 
 function unwrap<T>(body: ApiResponse<T>): T {
     if (!body.success) {
@@ -53,6 +56,19 @@ export const eventoService = {
         const response = await apiClient.patch<EventoResponse>(
             `/eventos/${id}/completar`,
             {},
+        );
+        return unwrap(response.data);
+    },
+    async listAll(
+        estado?: EstadoEvento,
+        page?: number,
+        limit?: number,
+    ): Promise<PaginatedResult<EventoDTO>> {
+        const response = await apiClient.get<EventoPaginatedResponse>(
+            "/eventos",
+            {
+                params: { estado, page, limit },
+            },
         );
         return unwrap(response.data);
     },

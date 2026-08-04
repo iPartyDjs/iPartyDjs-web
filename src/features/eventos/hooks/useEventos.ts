@@ -1,5 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { UpdateEventoInput } from "@ipartydjs/shared";
+import {
+    keepPreviousData,
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+import type { EstadoEvento, UpdateEventoInput } from "@ipartydjs/shared";
 import { eventoService } from "@/features/eventos/services/evento.service";
 import { useAuthStore } from "@/core/stores/auth.store";
 
@@ -71,5 +76,21 @@ export function useCompleteEvento() {
                 queryKey: ["resenia", "evento", id],
             });
         },
+    });
+}
+export function useListAllEventos(
+    estado?: EstadoEvento,
+    page?: number,
+    limit?: number,
+) {
+    const hasRole = useAuthStore((state) => state.hasRole);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isAdmin = hasRole("administrador") || hasRole("superadministrador");
+
+    return useQuery({
+        queryKey: ["eventos", "admin", estado, page, limit],
+        queryFn: () => eventoService.listAll(estado, page, limit),
+        enabled: isAuthenticated && isAdmin,
+        placeholderData: keepPreviousData,
     });
 }

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { isAxiosError } from "axios";
 import { LoginSchema } from "@ipartydjs/shared";
 import { apiClient } from "@/core/api/client";
 import { useAuthStore } from "@/core/stores/auth.store";
 import "@/features/auth/admin/Adminlogin.css";
+import { isAxiosError } from "axios";
 
 type LoginInput = z.infer<typeof LoginSchema>;
 type FieldErrors = Partial<Record<"email" | "password", string>>;
@@ -57,6 +57,7 @@ export default function AdminLogin() {
         }
 
         setSubmitting(true);
+
         try {
             const { data } = await apiClient.post<{ data: LoginResponseData }>(
                 "/auth/login",
@@ -64,13 +65,13 @@ export default function AdminLogin() {
             );
 
             const { token, usuario } = data.data;
-            const userRole = usuario.rol_nombre || usuario.rol || "";
+            const userRole = usuario.rol_nombre || usuario.rol;
 
-            if (!["administrador", "superadministrador"].includes(userRole)) {
+            if (!["administrador", "superadministrador"].includes(userRole!)) {
                 showAlert({
                     type: "error",
                     message:
-                        "Esta cuenta no tiene acceso al panel de administración.",
+                        "Esta cuenta no tiene acceso al panel de administración. :(",
                 });
                 setSubmitting(false);
                 return;
