@@ -27,13 +27,8 @@ export default function CrearSolicitud() {
 
     return (
         <div className="er-main">
-            <div className="er-header">
-                <span className="er-eyebrow">SOLICITUD DE EVENTO</span>
-                <h1 className="er-title">
-                    ¿Qué tipo de evento tienes en mente?
-                </h1>
-            </div>
             <h1>Nueva solicitud</h1>
+
             {errorMsg && <p className="error-text">{errorMsg}</p>}
             <SolicitudForm
                 mode="crear"

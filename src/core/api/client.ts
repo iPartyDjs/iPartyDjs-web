@@ -34,9 +34,15 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error: AxiosError<ApiResponse<unknown>>) => {
-        if (error.response?.status === 401) {
+        if (
+            error.response?.status === 401 &&
+            !error.config?.url?.includes("/auth/login")
+        ) {
             localStorage.removeItem("auth_token");
-            window.location.href = "/login";
+            const isAdminRoute =
+                window.location.pathname.startsWith("/dashboard/admin") ||
+                window.location.pathname.startsWith("/admin");
+            window.location.href = isAdminRoute ? "/admin" : "/login";
         }
 
         const responseData = error.response?.data;

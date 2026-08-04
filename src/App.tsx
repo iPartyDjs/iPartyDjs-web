@@ -25,7 +25,6 @@ import PrivateRoute from "./layouts/PrivateRoute";
 import MisSolicitudes from "./features/solicitudes/pages/MisSolicitudes";
 import CrearSolicitud from "./features/solicitudes/pages/CrearSolicitud";
 import EventRequest from "./features/solicitudes/pages/EventRequest";
-import MySolicitudes from "./features/solicitudes/pages/MySolicitudes";
 import MisCitas from "./features/citas/pages/MisCitas";
 import MisResenias from "./features/resenias/pages/MisResenias";
 import MisEventos from "./features/eventos/pages/MisEventos";
@@ -49,6 +48,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/registro" element={<Register />} />
                     <Route path="/admin" element={<AdminLogin />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
                 </Route>
 
                 {/* Rutas privadas — panel CLIENTE */}
@@ -77,6 +77,15 @@ function App() {
                 {/* Rutas privadas — panel ADMIN */}
                 <Route
                     path="/dashboard/admin"
+                    element={
+                        <RequireAdminAuth>
+                            <AdminUsersDashboard />
+                        </RequireAdminAuth>
+                    }
+                />
+
+                <Route
+                    path="/dashboard/admin/usuarios"
                     element={
                         <RequireAdminAuth>
                             <AdminUsersDashboard />
