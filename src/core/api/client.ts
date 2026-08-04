@@ -16,9 +16,21 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
     (response) => {
         const body = response.data as ApiResponse<unknown>;
+
+        // Verificamos si NO es exitosa
         if (!body.success) {
-            return Promise.reject(new Error(body.message));
+            // Al ser success: false, TypeScript sabe que es un ApiErrorResponse
+            // Si la propiedad message es opcional o tiene otro nombre en ApiErrorResponse,
+            // aseguramos su extracción:
+            const errorMessage =
+                ("message" in body &&
+                    typeof body.message === "string" &&
+                    body.message) ||
+                "Error en la respuesta del servidor";
+
+            return Promise.reject(new Error(errorMessage));
         }
+
         return response;
     },
     (error: AxiosError<ApiResponse<unknown>>) => {
@@ -28,10 +40,18 @@ apiClient.interceptors.response.use(
         }
 
         const responseData = error.response?.data;
-        const message =
-            responseData && !responseData.success
-                ? responseData.message
-                : error.message;
+
+        // Extraemos el mensaje de forma segura inspeccionando la propiedad
+        let message = error.message;
+
+        if (
+            responseData &&
+            !responseData.success &&
+            "message" in responseData
+        ) {
+            message =
+                (responseData as { message: string }).message || error.message;
+        }
 
         return Promise.reject(new Error(message));
     },

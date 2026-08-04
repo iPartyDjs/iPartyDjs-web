@@ -1,5 +1,4 @@
-/* ===== src/features/solicitudes/pages/EditarSolicitud.tsx ===== */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { UpdateSolicitudInput } from "@ipartydjs/shared";
 import { SolicitudForm } from "@/features/solicitudes/components/SolicitudForm";
@@ -7,11 +6,18 @@ import {
     useSolicitud,
     useUpdateSolicitud,
 } from "@/features/solicitudes/hooks/useSolicitudes";
-import "./solicitudes.css";
 
-export default function EditarSolicitud() {
+export default function EditarSolicitud({
+    idProp,
+    hideHeader,
+    onClose,
+}: {
+    idProp?: string;
+    hideHeader?: boolean;
+    onClose?: () => void;
+} = {}) {
     const { id } = useParams<{ id: string }>();
-    const solicitudId = id ?? "";
+    const solicitudId = idProp ?? id ?? "";
     const { data: solicitud, isLoading } = useSolicitud(solicitudId);
     const update = useUpdateSolicitud();
     const navigate = useNavigate();
@@ -23,7 +29,11 @@ export default function EditarSolicitud() {
             { id: solicitudId, data },
             {
                 onSuccess: () => {
-                    navigate("/mis-solicitudes");
+                    if (onClose) {
+                        onClose();
+                    } else {
+                        navigate("/dashboard/solicitudes");
+                    }
                 },
                 onError: (error) => {
                     setErrorMsg(
@@ -40,17 +50,22 @@ export default function EditarSolicitud() {
     if (!solicitud)
         return <div className="solicitudes-page">Solicitud no encontrada.</div>;
 
+    const initialData = useMemo(
+        () => ({
+            fecha_deseada: solicitud.fecha_deseada,
+            direccion: solicitud.direccion,
+            tipo_evento: solicitud.tipo_evento,
+        }),
+        [solicitud.fecha_deseada, solicitud.direccion, solicitud.tipo_evento],
+    );
+
     return (
         <div className="solicitudes-page">
-            <h1>Editar solicitud</h1>
+            {!hideHeader && <h1>Editar solicitud</h1>}
             {errorMsg && <p className="error-text">{errorMsg}</p>}
             <SolicitudForm
                 mode="editar"
-                initialData={{
-                    fecha_deseada: solicitud.fecha_deseada,
-                    direccion: solicitud.direccion,
-                    tipo_evento: solicitud.tipo_evento,
-                }}
+                initialData={initialData}
                 onSubmit={handleSubmit}
                 isLoading={update.isPending}
             />

@@ -57,6 +57,8 @@ export function useUpdateSolicitud() {
             data: UpdateSolicitudInput;
         }) => solicitudService.update(id, data),
         onSuccess: (_result, variables) => {
+            console.log(variables.id);
+
             queryClient.invalidateQueries({
                 queryKey: ["solicitudes", "mias"],
             });

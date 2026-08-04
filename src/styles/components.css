@@ -1344,7 +1344,6 @@
     border-color: var(--color-primary-light);
 }
 
-
 .login-card {
     width: 100%;
     max-width: 520px;
@@ -1677,10 +1676,10 @@
 }
 
 .mc-subtitle {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 300;
-    color: rgba(var(--color-white-rgb), 0.35);
-    margin-bottom: 28px;
+    color: rgba(var(--color-white-rgb), 0.6);
+    margin: 0.5rem 0px;
 }
 
 .mc-filter-label {
@@ -2978,6 +2977,48 @@
 
 .we-card--signature .we-card__cta:hover {
     background: rgba(var(--color-bg-rgb), 0.85);
+}
+
+.ms-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.ms-modal {
+    width: min(100%, 560px);
+    max-height: min(100vh, 90vh);
+    overflow-y: auto;
+    background: var(--color-surface-1);
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    padding: 24px;
+}
+
+.ms-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.ms-modal-close {
+    color: var(--color-white);
+    border: none;
+    background: transparent;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ms-modal-content p {
+    margin: 12px 0;
 }
 
 /* ==== Responsive (componentes) ==== */

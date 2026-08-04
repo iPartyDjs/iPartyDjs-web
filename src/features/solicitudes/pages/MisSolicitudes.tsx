@@ -1,9 +1,8 @@
-/* ===== src/features/solicitudes/pages/MisSolicitudes.tsx ===== */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { EstadoSolicitud } from "@ipartydjs/shared";
+import type { EstadoSolicitud, TipoEvento } from "@ipartydjs/shared";
 import { useMisSolicitudes } from "@/features/solicitudes/hooks/useSolicitudes";
-import "./solicitudes.css";
+import EditarSolicitud from "./EditarSolicitud";
 
 const ESTADO_OPTIONS: EstadoSolicitud[] = [
     "pendiente",
@@ -12,50 +11,71 @@ const ESTADO_OPTIONS: EstadoSolicitud[] = [
     "rechazada",
 ];
 
+const STATUS_COLOR: Record<EstadoSolicitud, string> = {
+    completada: "badge-green",
+    pendiente: "badge-gold",
+    rechazada: "badge-red",
+    en_proceso: "badge-blue",
+};
+
+const TIPO_EVENTO_VIEW: Record<TipoEvento, string> = {
+    boda: "Boda",
+    xv_anos: "XV Años",
+    corporativo: "Corporativo",
+    cumpleanos: "Cumpleaños",
+    otro: "Otro",
+};
+
 export default function MisSolicitudes() {
     const [estado, setEstado] = useState<EstadoSolicitud | undefined>(
         undefined,
     );
+    const [selectedSolicitudId, setSelectedSolicitudId] = useState<
+        string | null
+    >(null);
     const {
         data: solicitudes,
         isLoading,
         isError,
         error,
     } = useMisSolicitudes(estado);
+    // We now render EditarSolicitud directly inside the modal via idProp
     const navigate = useNavigate();
 
     return (
-        <div className="solicitudes-page">
-            <header className="solicitudes-header">
+        <div className="mc-main">
+            <header className="step-header">
                 <h1>Mis solicitudes</h1>
                 <button
-                    className="btn-primary"
-                    onClick={() => navigate("/solicitudes/nueva")}
+                    className="btn-gold"
+                    onClick={() => navigate("/dashboard/solicitudes/nueva")}
                 >
                     Nueva solicitud
                 </button>
             </header>
 
-            <div className="solicitudes-filters">
-                <label htmlFor="estado-filter">Filtrar por estado</label>
-                <select
-                    id="estado-filter"
-                    value={estado ?? ""}
-                    onChange={(e) =>
-                        setEstado(
-                            e.target.value
-                                ? (e.target.value as EstadoSolicitud)
-                                : undefined,
-                        )
-                    }
+            <div
+                className="ms-filters"
+                role="tablist"
+                aria-label="Filtros de estado"
+            >
+                <button
+                    type="button"
+                    className={`ms-filter-btn ${estado === undefined ? "active" : ""}`}
+                    onClick={() => setEstado(undefined)}
                 >
-                    <option value="">Todos</option>
-                    {ESTADO_OPTIONS.map((e) => (
-                        <option key={e} value={e}>
-                            {e}
-                        </option>
-                    ))}
-                </select>
+                    Todos
+                </button>
+                {ESTADO_OPTIONS.map((opt) => (
+                    <button
+                        key={opt}
+                        type="button"
+                        className={`ms-filter-btn  ${estado === opt ? "active" : ""}`}
+                        onClick={() => setEstado(opt)}
+                    >
+                        {opt}
+                    </button>
+                ))}
             </div>
 
             {isLoading && <p>Cargando solicitudes...</p>}
@@ -67,28 +87,76 @@ export default function MisSolicitudes() {
                 </p>
             )}
 
-            <div className="solicitudes-grid">
-                {solicitudes?.map((s) => (
-                    <div key={s.id_solicitud} className="solicitud-card">
-                        <p className="solicitud-tipo">{s.tipo_evento}</p>
-                        <p>Fecha deseada: {s.fecha_deseada}</p>
-                        <p>
-                            Estado:{" "}
-                            <span className={`badge badge-${s.estado}`}>
-                                {s.estado}
-                            </span>
-                        </p>
-                        <button
-                            className="btn-secondary"
+            <div className="">
+                <div className="ms-section-label">
+                    Solicitudes ({solicitudes?.length})
+                </div>
+                <div className="ms-list">
+                    {solicitudes?.map((s) => (
+                        <div
+                            key={s.id_solicitud}
+                            className={`ms-card`}
                             onClick={() =>
-                                navigate(`/solicitudes/${s.id_solicitud}`)
+                                setSelectedSolicitudId(s.id_solicitud)
                             }
                         >
-                            Ver detalle
-                        </button>
-                    </div>
-                ))}
+                            <div className="ms-card-top">
+                                <span className="ms-card-tipo">
+                                    {TIPO_EVENTO_VIEW[s.tipo_evento]}
+                                </span>
+                                <span
+                                    className={`ms-badge ${STATUS_COLOR[s.estado]}`}
+                                >
+                                    {s.estado}
+                                </span>
+                            </div>
+
+                            <div className="ms-card-meta">
+                                <span>{s.fecha_deseada}</span>
+                                <span className="ms-dot">·</span>
+                                <span>{s.direccion}</span>
+                            </div>
+
+                            <div className="ms-card-enviada">
+                                Enviada el {s.created_at}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
+
+            {selectedSolicitudId && (
+                <div
+                    className="ms-modal-backdrop"
+                    onClick={() => setSelectedSolicitudId(null)}
+                >
+                    <div
+                        className="ms-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Editar solicitud"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="ms-modal-header">
+                            <h2>Editar solicitud</h2>
+                            <button
+                                type="button"
+                                className="ms-modal-close"
+                                onClick={() => setSelectedSolicitudId(null)}
+                                aria-label="Cerrar modal"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <EditarSolicitud
+                            idProp={selectedSolicitudId}
+                            hideHeader
+                            onClose={() => setSelectedSolicitudId(null)}
+                        />
+                    </div>
+                </div>
+            )}
 
             {solicitudes?.length === 0 && !isLoading && (
                 <p>No tienes solicitudes registradas.</p>

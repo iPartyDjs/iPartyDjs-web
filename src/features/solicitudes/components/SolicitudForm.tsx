@@ -1,5 +1,5 @@
 /* ===== src/features/solicitudes/components/SolicitudForm.tsx ===== */
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -8,7 +8,6 @@ import {
     type CreateSolicitudInput,
     type TipoEvento,
 } from "@ipartydjs/shared";
-import "./solicitudes.css";
 
 const TIPO_EVENTO_OPTIONS: { value: TipoEvento; label: string }[] = [
     { value: "boda", label: "Boda" },
@@ -42,6 +41,21 @@ export function SolicitudForm({
     isLoading,
     mode,
 }: SolicitudFormProps) {
+    const defaultValues = useMemo(
+        () => ({
+            fecha_deseada: initialData?.fecha_deseada
+                ? new Date(initialData.fecha_deseada)
+                : undefined,
+            direccion: initialData?.direccion ?? "",
+            tipo_evento: initialData?.tipo_evento ?? "boda",
+        }),
+        [
+            initialData?.fecha_deseada,
+            initialData?.direccion,
+            initialData?.tipo_evento,
+        ],
+    );
+
     const {
         register,
         handleSubmit,
@@ -49,26 +63,12 @@ export function SolicitudForm({
         formState: { errors },
     } = useForm<SolicitudFormValues, unknown, CreateSolicitudInput>({
         resolver: zodResolver(CreateSolicitudSchema),
-        defaultValues: {
-            fecha_deseada: initialData?.fecha_deseada
-                ? new Date(initialData.fecha_deseada)
-                : undefined,
-            direccion: initialData?.direccion ?? "",
-            tipo_evento: initialData?.tipo_evento ?? "boda",
-        },
+        defaultValues,
     });
 
     useEffect(() => {
-        if (initialData) {
-            reset({
-                fecha_deseada: initialData.fecha_deseada
-                    ? new Date(initialData.fecha_deseada)
-                    : undefined,
-                direccion: initialData.direccion ?? "",
-                tipo_evento: initialData.tipo_evento ?? "boda",
-            });
-        }
-    }, [initialData, reset]);
+        reset(defaultValues);
+    }, [defaultValues, reset]);
 
     return (
         <form
@@ -89,6 +89,7 @@ export function SolicitudForm({
                     </span>
                 )}
             </div>
+            <br />
 
             <div className="form-field">
                 <label htmlFor="direccion">Dirección</label>
@@ -99,6 +100,7 @@ export function SolicitudForm({
                     </span>
                 )}
             </div>
+            <br />
 
             <div className="form-field">
                 <label htmlFor="tipo_evento">Tipo de evento</label>
@@ -116,7 +118,9 @@ export function SolicitudForm({
                 )}
             </div>
 
-            <button type="submit" className="btn-primary" disabled={isLoading}>
+            <br />
+
+            <button type="submit" className="btn-gold" disabled={isLoading}>
                 {isLoading
                     ? "Guardando..."
                     : mode === "crear"
