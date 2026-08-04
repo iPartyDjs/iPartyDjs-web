@@ -18,8 +18,8 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@ipartydjs/shared':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^8.3.0
+        version: 8.3.0
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.101.4(react@19.2.6)
@@ -275,8 +275,8 @@ packages:
       react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@ipartydjs/shared@7.2.1':
-    resolution: {integrity: sha512-0YQapI7n5FC11wvVy4aN/fRi/2oH2k90gQF0sndo25Yt4mAEHKJgcghnTYJc+DdM2SiB/kb6Yf/qHEHdg/lPoQ==, tarball: https://npm.pkg.github.com/download/@ipartydjs/shared/7.2.1/0cb72ac8ebcda835a410cfa16c32fccf304066ba}
+  '@ipartydjs/shared@8.3.0':
+    resolution: {integrity: sha512-SatT3UYmVqA/7j9HG6CsFdMf/xgnF3EEBQdu7xQkNcmaX4RsUV9wPtXIsSfqBRELGXNMAQ00MZ5SnuuHXwwOsA==, tarball: https://npm.pkg.github.com/download/@ipartydjs/shared/8.3.0/3d3ddd83431e8b0cc560857c7fc3e24dd6767e9f}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1701,7 +1701,7 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
-  '@ipartydjs/shared@7.2.1':
+  '@ipartydjs/shared@8.3.0':
     dependencies:
       zod: 4.4.3
 
