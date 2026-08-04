@@ -1,0 +1,141 @@
+/* ===== src/features/solicitudes/pages/solicitudes.css ===== */
+.solicitudes-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.solicitudes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.solicitudes-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.solicitudes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.solicitud-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.solicitud-tipo {
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.solicitudes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+.solicitudes-table th,
+.solicitudes-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.badge-pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+.badge-en_proceso {
+    background: #cce5ff;
+    color: #004085;
+}
+.badge-completada {
+    background: #d4edda;
+    color: #155724;
+}
+.badge-rechazada {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.solicitud-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 480px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-error {
+    color: #c0392b;
+    font-size: 0.85rem;
+}
+
+.error-text {
+    color: #c0392b;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-approve,
+.btn-reject {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #2c3e50;
+    color: white;
+}
+.btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+.btn-approve {
+    background: #27ae60;
+    color: white;
+}
+.btn-reject {
+    background: #c0392b;
+    color: white;
+}
+
+.solicitud-detalle p {
+    margin: 4px 0;
+}
