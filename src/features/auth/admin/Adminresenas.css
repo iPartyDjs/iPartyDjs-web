@@ -1,0 +1,364 @@
+/* ==================================================================
+   AdminReportes — paleta dorado/negro, Cormorant Garamond + Montserrat
+   ================================================================== */
+
+:root {
+  --ipdj-gold: #c9a84c;
+  --ipdj-gold-soft: rgba(201, 168, 76, 0.15);
+  --ipdj-black: #0d0d0d;
+  --ipdj-black-soft: #1a1a1a;
+  --ipdj-gray: #8a8a8a;
+}
+
+/* ---------- Encabezado + botón exportar ---------- */
+
+.ipdj-rep-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ipdj-rep-header-titulo {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #f2f2f2;
+  margin: 0 0 2px 0;
+}
+
+.ipdj-rep-header-subtitulo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  color: var(--ipdj-gray);
+  margin: 0;
+}
+
+.ipdj-rep-btn-pdf {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 9px 20px 9px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 168, 76, 0.5);
+  background: linear-gradient(160deg, #2a2314, var(--ipdj-black-soft) 70%);
+  color: var(--ipdj-gold);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.ipdj-rep-btn-pdf:hover {
+  transform: translateY(-1px);
+  border-color: var(--ipdj-gold);
+  box-shadow: 0 6px 18px rgba(201, 168, 76, 0.22);
+}
+
+.ipdj-rep-btn-pdf:active {
+  transform: translateY(0);
+}
+
+.ipdj-rep-btn-pdf-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ipdj-gold);
+  color: var(--ipdj-black);
+  flex-shrink: 0;
+}
+
+/* ---------- KPIs ---------- */
+
+.ipdj-rep-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ipdj-stat-card {
+  background: var(--ipdj-black-soft);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ipdj-stat-card.destacado {
+  border-color: var(--ipdj-gold);
+  background: linear-gradient(
+    145deg,
+    var(--ipdj-black-soft),
+    rgba(201, 168, 76, 0.08)
+  );
+}
+
+.ipdj-stat-valor {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ipdj-gold);
+  white-space: nowrap;
+}
+
+.ipdj-stat-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ipdj-gray);
+}
+
+/* ---------- Paneles de gráficas ---------- */
+
+.ipdj-rep-panel {
+  background: var(--ipdj-black-soft);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+
+.ipdj-rep-panel-titulo {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: #f2f2f2;
+  margin: 0 0 12px 0;
+}
+
+.ipdj-rep-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.ipdj-rep-grid-2 .ipdj-rep-panel {
+  margin-bottom: 0;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1000px) {
+  .ipdj-rep-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ipdj-rep-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Encabezado de marca (solo impresión) ---------- */
+
+.ipdj-rep-print-header {
+  display: none;
+}
+
+/* ---------- Impresión / exportar a PDF ----------
+   Se activa cuando el usuario hace click en "Exportar a PDF"
+   (window.print()). En el diálogo del navegador, el destino
+   "Guardar como PDF" genera el archivo directamente.
+
+   Nota: para que se vea limpio, en el diálogo de impresión
+   conviene desactivar la opción "Encabezados y pies de página"
+   del navegador (esa es la que agrega la URL/fecha del sistema
+   arriba y abajo) — eso no se puede forzar por CSS, es un ajuste
+   del navegador. El diseño de abajo reemplaza esa info con un
+   encabezado propio de marca. */
+
+@media print {
+  /* Chrome/Safari desaturan colores al imprimir por defecto
+     (para ahorrar tinta). Esto lo desactiva para que las gráficas
+     y acentos dorados se impriman con su color real. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  .ipdj-topbar,
+  .ipdj-sidebar,
+  .ipdj-rep-btn-pdf {
+    display: none !important;
+  }
+
+  .ipdj-layout {
+    display: block !important;
+  }
+
+  .ipdj-main {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  body,
+  .ipdj-app {
+    background: #ffffff !important;
+  }
+
+  /* Encabezado de marca */
+  .ipdj-rep-print-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid #c9a84c;
+  }
+
+  .ipdj-rep-print-brand {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #1a1a1a;
+  }
+
+  .ipdj-rep-print-brand span {
+    color: #a8842f;
+  }
+
+  .ipdj-rep-print-meta {
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #777;
+  }
+
+  .ipdj-rep-header {
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .ipdj-rep-header-titulo,
+  .ipdj-rep-panel-titulo {
+    color: #1a1a1a !important;
+  }
+
+  .ipdj-rep-panel-titulo {
+    border-left: 3px solid #c9a84c;
+    padding-left: 10px;
+  }
+
+  .ipdj-rep-header-subtitulo,
+  .ipdj-stat-label {
+    color: #666 !important;
+  }
+
+  .ipdj-stat-card,
+  .ipdj-rep-panel {
+    background: #fbfaf7 !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .ipdj-stat-card.destacado {
+    border: 1px solid #c9a84c !important;
+    background: #fdf8ec !important;
+  }
+
+  .ipdj-stat-valor {
+    color: #a8842f !important;
+  }
+
+  .ipdj-rep-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    break-inside: avoid;
+  }
+
+  .ipdj-rep-kpis {
+    break-inside: avoid;
+  }
+
+  /* Pie de página de marca en cada hoja */
+  .ipdj-rep-printable {
+    position: relative;
+  }
+
+  .ipdj-rep-printable::after {
+    content: "iPartyDJs · Panel de administración";
+    display: block;
+    margin-top: 24px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-family: "Montserrat", sans-serif;
+    font-size: 9px;
+    color: #999;
+    text-align: center;
+  }
+}
+
+/* Header para alinear el botón de exportación */
+.ipdj-resenas-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+/* Botón elegante dorado/oscuro */
+.ipdj-btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(
+    135deg,
+    rgba(201, 168, 76, 0.2),
+    rgba(201, 168, 76, 0.05)
+  );
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.ipdj-btn-pdf:hover {
+  background: var(--gold);
+  color: var(--black-soft);
+  box-shadow: 0 6px 18px rgba(201, 168, 76, 0.35);
+  transform: translateY(-1px);
+}
+
+.ipdj-btn-pdf:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ipdj-btn-pdf-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Contenedor PDF */
+.ipdj-pdf-container {
+  padding: 8px;
+  border-radius: 8px;
+}

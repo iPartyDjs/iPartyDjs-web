@@ -1,0 +1,210 @@
+/* =====================================================
+   iPartyDJs — Admin Sidebar
+===================================================== */
+
+.admin-sidebar {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dark: #8b6914;
+  --black: #080808;
+  --black-soft: #111111;
+  --dark-1: #161616;
+  --dark-2: #1e1e1e;
+  --dark-3: #2a2a2a;
+  --white: #f5f0e8;
+
+  width: 248px;
+  min-width: 248px;
+  height: 100vh;
+  background: var(--black-soft);
+  border-right: 1px solid rgba(201, 168, 76, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  font-family: "Montserrat", sans-serif;
+  color: var(--white);
+}
+
+.admin-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 24px;
+}
+
+.admin-sidebar-logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+}
+
+.admin-sidebar-logo-text {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.admin-sidebar-nav ul {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-sidebar-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(245, 240, 232, 0.35);
+  margin: 0 0 8px;
+  padding: 0 8px;
+}
+
+.admin-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(245, 240, 232, 0.6);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 300ms ease,
+    color 300ms ease;
+}
+
+.admin-nav-item:hover {
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--white);
+}
+
+.admin-nav-item.is-active {
+  background: rgba(201, 168, 76, 0.14);
+  color: var(--gold-light);
+}
+
+.admin-nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.admin-nav-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-nav-label {
+  flex: 1;
+}
+
+.admin-nav-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--black);
+  background: var(--gold-light);
+  border-radius: 999px;
+  padding: 1px 7px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.admin-nav-item--logout {
+  color: rgba(224, 138, 138, 0.75);
+}
+
+.admin-nav-item--logout:hover {
+  background: rgba(209, 106, 106, 0.1);
+  color: #e08a8a;
+}
+
+.admin-nav-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.admin-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 8px 4px;
+  border-top: 1px solid rgba(245, 240, 232, 0.08);
+  margin-top: 8px;
+}
+
+.admin-sidebar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-light);
+  background: var(--dark-2);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  flex-shrink: 0;
+}
+
+.admin-sidebar-profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--white);
+}
+
+.admin-sidebar-profile-role {
+  font-size: 11px;
+  margin: 0;
+  color: rgba(245, 240, 232, 0.45);
+}
+
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 76px;
+    min-width: 76px;
+    padding: 20px 10px;
+  }
+
+  .admin-sidebar-logo-text,
+  .admin-nav-label,
+  .admin-nav-badge,
+  .admin-sidebar-group-label,
+  .admin-sidebar-profile-name,
+  .admin-sidebar-profile-role {
+    display: none;
+  }
+
+  .admin-nav-item {
+    justify-content: center;
+  }
+
+  .admin-sidebar-profile {
+    justify-content: center;
+  }
+}

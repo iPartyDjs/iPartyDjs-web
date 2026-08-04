@@ -1,0 +1,376 @@
+.review-page {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Arranca desde arriba, NO centrado vertical */
+    padding: 32px 24px 60px 24px; /* Margen superior cómodo y espacio abajo para el botón */
+    position: relative;
+    background: var(--color-bg);
+    color: var(--color-white);
+    font-family: var(--font-body);
+    box-sizing: border-box;
+}
+
+.review-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 60% 40% at 15% 10%,
+        rgba(201, 161, 74, 0.05),
+        transparent 60%
+    ),
+    radial-gradient(ellipse 50% 50% at 90% 85%, rgba(201, 161, 74, 0.04), transparent 60%);
+    pointer-events: none;
+}
+
+.review-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 800px; /* Ancho ideal para formularios en dashboard */
+    margin: 0 auto;
+}
+
+.review-eyebrow {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.review-title {
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.review-title em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--color-primary-light), var(--color-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.review-subtext {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    max-width: 540px;
+    margin: 0 auto 28px;
+    font-weight: 300;
+}
+
+.review-card {
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-surface-3);
+    border-radius: 6px;
+    padding: clamp(20px, 3vw, 36px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.review-field {
+    margin-bottom: 20px;
+}
+
+.review-field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.review-hint {
+    font-size: 11px;
+    color: var(--color-text-dim);
+    font-weight: 300;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 6px;
+}
+
+.review-field input[type='text'],
+.review-field input[type='date'],
+.review-field textarea {
+    width: 100%;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-surface-3);
+    color: var(--color-white);
+    padding: 12px 14px;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 300;
+    border-radius: 2px;
+    box-sizing: border-box;
+    transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.review-field input[type='date'] {
+    color-scheme: dark;
+}
+
+.review-field input:focus,
+.review-field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-surface-1);
+}
+
+.review-field input::placeholder,
+.review-field textarea::placeholder {
+    color: var(--color-text-dim);
+}
+
+.review-field textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+.review-row2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.review-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--color-danger);
+    font-weight: 400;
+}
+
+/* Estrellas */
+.review-stars {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.review-star {
+    font-size: 26px;
+    color: var(--color-surface-3);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.15s ease;
+    line-height: 1;
+}
+
+.review-star:hover {
+    transform: scale(1.12);
+}
+
+.review-star.filled {
+    color: var(--color-primary);
+}
+
+.review-rating-word {
+    margin-left: 10px;
+    font-size: 12px;
+    color: var(--color-primary-light);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Chips tipo de evento */
+.review-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.review-chip {
+    padding: 8px 14px;
+    border: 1px solid var(--color-surface-3);
+    background: var(--color-surface-2);
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    font-weight: 400;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.review-chip:hover {
+    border-color: var(--color-primary-dark);
+    color: var(--color-white);
+}
+
+.review-chip.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #000000;
+    font-weight: 500;
+}
+
+/* Dropzone foto */
+.review-dropzone {
+    border: 1px dashed var(--color-surface-3);
+    border-radius: 2px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    background: var(--color-surface-2);
+}
+
+.review-dropzone:hover {
+    border-color: var(--color-primary-dark);
+    background: var(--color-surface-1);
+}
+
+.review-dropzone-icon {
+    font-size: 18px;
+    color: var(--color-primary);
+    margin-bottom: 6px;
+}
+
+.review-dropzone p {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-weight: 300;
+}
+
+.review-dropzone p span {
+    color: var(--color-primary-light);
+}
+
+/* Contador de caracteres */
+.review-counter {
+    text-align: right;
+    font-size: 11px;
+    color: var(--color-text-dim);
+    margin-top: 4px;
+    font-weight: 300;
+}
+
+/* Checkbox consentimiento */
+.review-consent {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.review-consent input {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: 1px solid var(--color-surface-3);
+    background: var(--color-surface-2);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    margin-top: 2px;
+    transition: all 0.2s ease;
+}
+
+.review-consent input:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.review-consent input:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);
+    color: #000000;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.review-consent-txt {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    font-weight: 300;
+}
+
+/* Botón submit */
+.review-btn-submit {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+    border: none;
+    color: #000000;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: filter 0.25s ease, transform 0.15s ease;
+}
+
+.review-btn-submit:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.review-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success state */
+.review-success {
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.review-success-check {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 20px;
+    border: 1px solid var(--color-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--color-primary);
+}
+
+.review-success h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 26px;
+    margin-bottom: 10px;
+}
+
+.review-success p {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    font-weight: 300;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+    .review-row2 {
+        grid-template-columns: 1fr;
+    }
+}
