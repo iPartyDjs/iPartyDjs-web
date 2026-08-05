@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import {
     ScheduleAppointmentSchema,
     type ScheduleAppointmentInput,
 } from "@ipartydjs/shared";
-import "../pages/citas.css";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export interface SolicitudOption {
     id_solicitud: string;
