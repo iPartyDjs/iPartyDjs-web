@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminPageShell from "./AdminPageShell";
 import { eventoService } from "../../eventos/services/evento.service";
-import type { EventoDTO } from "@ipartydjs/shared";
+import { solicitudService } from "@/features/solicitudes/services/solicitud.service";
+import type { EventoDTO, SolicitudEventoDTO } from "@ipartydjs/shared";
 import "./Admineventos.css";
 
 /* ------------------------------------------------------------------ */
@@ -64,6 +65,14 @@ export default function AdminEventos() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Solicitudes elegibles para convertirse en evento: estado "completada"
+  // (cita concluida con aceptación) y sin evento creado todavía.
+  const [solicitudesDisponibles, setSolicitudesDisponibles] = useState<
+    SolicitudEventoDTO[]
+  >([]);
+  const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
+  const [errorSolicitudes, setErrorSolicitudes] = useState<string | null>(null);
+
   // Cargar eventos reales desde el backend al montar el componente de forma segura
   useEffect(() => {
     let isMounted = true;
@@ -101,6 +110,51 @@ export default function AdminEventos() {
       isMounted = false;
     };
   }, [selectedId]);
+
+  // Cargar solicitudes elegibles cada vez que se abre el modal de "Nuevo evento".
+  useEffect(() => {
+    if (!showNewEventModal) return;
+
+    let isMounted = true;
+
+    async function fetchSolicitudes() {
+      try {
+        setLoadingSolicitudes(true);
+        setErrorSolicitudes(null);
+        const result = await solicitudService.listAll("completada", 1, 100);
+        const items = Array.isArray(result)
+          ? result
+          : ((result as { items?: SolicitudEventoDTO[] }).items ?? []);
+
+        // Excluye solicitudes que ya tienen un evento creado.
+        const idsConEvento = new Set(events.map((e) => e.id_solicitud));
+        const disponibles = items.filter(
+          (s) => !idsConEvento.has(s.id_solicitud),
+        );
+
+        if (isMounted) {
+          setSolicitudesDisponibles(disponibles);
+        }
+      } catch (err: unknown) {
+        if (isMounted) {
+          const errorObj = err as { message?: string };
+          setErrorSolicitudes(
+            errorObj.message || "Error al cargar las solicitudes",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingSolicitudes(false);
+        }
+      }
+    }
+
+    fetchSolicitudes();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [showNewEventModal, events]);
 
   const selected = useMemo(
     () => events.find((e) => e.id_evento === selectedId) ?? events[0],
@@ -176,10 +230,35 @@ export default function AdminEventos() {
     }
   }
 
+  function openNewEventModal() {
+    setNewEvent({
+      id_solicitud: "",
+      fecha_hora: "",
+      direccion: "",
+      tipo_evento: CATEGORIES[0],
+    });
+    setCreateError(null);
+    setShowNewEventModal(true);
+  }
+
+  function selectSolicitud(s: SolicitudEventoDTO) {
+    setNewEvent((n) => ({
+      ...n,
+      id_solicitud: s.id_solicitud,
+      // Se precargan como ayuda; el admin puede seguir editándolos abajo.
+      direccion: s.direccion ?? n.direccion,
+      tipo_evento: (s.tipo_evento as EventoDTO["tipo_evento"]) ?? n.tipo_evento,
+    }));
+  }
+
   async function handleCreateEvent() {
     setCreateError(null);
 
-    if (!newEvent.id_solicitud || !newEvent.fecha_hora || !newEvent.direccion) {
+    if (!newEvent.id_solicitud) {
+      setCreateError("Selecciona una solicitud de la tabla");
+      return;
+    }
+    if (!newEvent.fecha_hora || !newEvent.direccion) {
       setCreateError("Completa todos los campos obligatorios");
       return;
     }
@@ -222,10 +301,7 @@ export default function AdminEventos() {
           <h2>Eventos</h2>
           <p>Administra los eventos registrados en la plataforma.</p>
         </div>
-        <button
-          className="ipdj-btn-gold"
-          onClick={() => setShowNewEventModal(true)}
-        >
+        <button className="ipdj-btn-gold" onClick={openNewEventModal}>
           + Nuevo evento
         </button>
       </div>
@@ -478,8 +554,10 @@ export default function AdminEventos() {
           background: "#1e293b",
           padding: "1.5rem",
           borderRadius: "8px",
-          width: "400px",
-          maxWidth: "90vw",
+          width: "560px",
+          maxWidth: "92vw",
+          maxHeight: "88vh",
+          overflowY: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -491,19 +569,118 @@ export default function AdminEventos() {
           </div>
         )}
 
+        {/* --------------------------------------------------------- */}
+        {/* Tabla de solicitudes elegibles (completadas, sin evento)  */}
+        {/* --------------------------------------------------------- */}
         <div className="ipdj-field">
-          <label>ID de Solicitud</label>
-          <input
-            type="text"
-            value={newEvent.id_solicitud}
-            onChange={(e) =>
-              setNewEvent((n) => ({ ...n, id_solicitud: e.target.value }))
-            }
-          />
+          <label>Solicitud</label>
+
+          {loadingSolicitudes && (
+            <div className="cell-muted" style={{ padding: "0.5rem 0" }}>
+              Cargando solicitudes...
+            </div>
+          )}
+
+          {errorSolicitudes && (
+            <div style={{ color: "red", padding: "0.5rem 0" }}>
+              {errorSolicitudes}
+            </div>
+          )}
+
+          {!loadingSolicitudes &&
+            !errorSolicitudes &&
+            solicitudesDisponibles.length === 0 && (
+              <div className="cell-muted" style={{ padding: "0.5rem 0" }}>
+                No hay solicitudes completadas pendientes de convertirse en
+                evento.
+              </div>
+            )}
+
+          {!loadingSolicitudes && solicitudesDisponibles.length > 0 && (
+            <div
+              style={{
+                maxHeight: "220px",
+                overflowY: "auto",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "6px",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: "left", padding: "0.5rem" }}>
+                      Tipo
+                    </th>
+                    <th style={{ textAlign: "left", padding: "0.5rem" }}>
+                      Fecha deseada
+                    </th>
+                    <th style={{ textAlign: "left", padding: "0.5rem" }}>
+                      Dirección
+                    </th>
+                    <th style={{ padding: "0.5rem" }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {solicitudesDisponibles.map((s) => {
+                    const isSelected = s.id_solicitud === newEvent.id_solicitud;
+                    const tipoLabel =
+                      CATEGORY_LABELS[
+                        s.tipo_evento as EventoDTO["tipo_evento"]
+                      ] ?? s.tipo_evento;
+
+                    return (
+                      <tr
+                        key={s.id_solicitud}
+                        onClick={() => selectSolicitud(s)}
+                        style={{
+                          cursor: "pointer",
+                          background: isSelected
+                            ? "rgba(201,168,76,0.18)"
+                            : "transparent",
+                        }}
+                      >
+                        <td style={{ padding: "0.5rem" }}>{tipoLabel}</td>
+                        <td
+                          style={{ padding: "0.5rem" }}
+                          className="cell-muted"
+                        >
+                          {s.fecha_deseada}
+                        </td>
+                        <td
+                          style={{ padding: "0.5rem" }}
+                          className="cell-muted"
+                        >
+                          {s.direccion}
+                        </td>
+                        <td style={{ padding: "0.5rem", textAlign: "right" }}>
+                          {isSelected ? (
+                            <span style={{ color: "#c9a84c" }}>
+                              ✓ Seleccionada
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="ipdj-filter-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectSolicitud(s);
+                              }}
+                            >
+                              Seleccionar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="ipdj-field">
-          <label>Fecha y Hora</label>
+          <label>Fecha y Hora del Evento</label>
           <input
             type="datetime-local"
             value={newEvent.fecha_hora}
@@ -558,7 +735,7 @@ export default function AdminEventos() {
   ) : null;
 
   return (
-    <AdminPageShell topbarTitle="Eventos" sidePanel={sidePanel}>
+    <AdminPageShell topbarTitle="Eventos" key="eventos" sidePanel={sidePanel}>
       {mainContent}
       {newEventModal}
     </AdminPageShell>
