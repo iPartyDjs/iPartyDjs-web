@@ -29,7 +29,18 @@ export const useAuthStore = create<AuthState>()(
                 set({ token: null, user: null, isAuthenticated: false });
             },
 
-            hasRole: (role) => get().user?.rol === role,
+            hasRole: (role) => {
+                const user = get().user;
+
+                if (!user) {
+                    return false;
+                }
+
+                return (
+                    user.rol === role ||
+                    ("rol_nombre" in user && user.rol_nombre === role)
+                );
+            },
         }),
         { name: "auth-storage" },
     ),

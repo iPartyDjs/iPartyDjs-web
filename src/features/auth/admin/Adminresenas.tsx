@@ -160,6 +160,7 @@ export default function AdminResenas() {
     return (
         <AdminPageShell
             topbarTitle="Reseñas"
+            key="resenas"
             sidePanel={
                 seleccionada && (
                     <PanelDetalleResena
