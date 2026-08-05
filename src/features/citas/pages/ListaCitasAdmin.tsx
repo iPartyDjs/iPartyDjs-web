@@ -465,17 +465,193 @@ export default function ListaCitasAdmin() {
               </button>
             </div>
 
-            <div className="ms-modal-content">
-              <div className="ipdj-field">
-                <label>Solicitud</label>
-                <input
-                  type="text"
-                  value={
-                    modalSolicitud
-                      ? `${TIPO_EVENTO_LABEL[modalSolicitud.tipo_evento] ?? modalSolicitud.tipo_evento} — ${modalSolicitud.fecha_deseada}`
-                      : "Cargando..."
-                  }
-                  disabled
+    return (
+        <AdminPageShell key="citas" topbarTitle="Citas">
+            <div className="mc-main">{mainContent}</div>
+
+            {modalCita && (
+                <div
+                    className="ms-modal-backdrop"
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={closeModal}
+                >
+                    <div
+                        className="ms-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="ms-modal-header">
+                            <div>
+                                <h3>Detalle de cita</h3>
+                                <p
+                                    style={{
+                                        margin: "10px 0 0",
+                                        color: "#8a8578",
+                                        fontSize: "0.95rem",
+                                    }}
+                                >
+                                    Revisa la información y ejecuta acciones
+                                    directamente desde aquí.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                className="ms-modal-close"
+                                onClick={closeModal}
+                                aria-label="Cerrar modal"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="ms-modal-content">
+                            <div className="ipdj-field">
+                                <label>Solicitud</label>
+                                <input
+                                    type="text"
+                                    value={
+                                        modalSolicitud
+                                            ? `${TIPO_EVENTO_LABEL[modalSolicitud.tipo_evento] ?? modalSolicitud.tipo_evento} — ${modalSolicitud.fecha_deseada}`
+                                            : "Cargando..."
+                                    }
+                                    disabled
+                                />
+                            </div>
+                            {modalSolicitud && (
+                                <div className="ipdj-field">
+                                    <label>Dirección de la solicitud</label>
+                                    <input
+                                        type="text"
+                                        value={modalSolicitud.direccion}
+                                        disabled
+                                    />
+                                </div>
+                            )}
+                            <div className="ipdj-field">
+                                <label>Fecha y hora de la cita</label>
+                                <input
+                                    type="text"
+                                    value={new Date(
+                                        modalCita.fecha_hora,
+                                    ).toLocaleString()}
+                                    disabled
+                                />
+                            </div>
+                            <div className="ipdj-field">
+                                <label>Enlace de videollamada</label>
+                                <input
+                                    type="text"
+                                    value={modalCita.enlace_videollamada}
+                                    disabled
+                                />
+                            </div>
+                            <div className="ipdj-field">
+                                <label>Estado</label>
+                                <span className={PILL_CLASS[modalCita.estado]}>
+                                    {ESTADO_LABEL[modalCita.estado]}
+                                </span>
+                            </div>
+
+                            {modalCita.observaciones && (
+                                <div className="ipdj-field">
+                                    <label>Observaciones</label>
+                                    <textarea
+                                        rows={3}
+                                        value={modalCita.observaciones}
+                                        disabled
+                                    />
+                                </div>
+                            )}
+
+                            {modalCita.estado === "programada" && (
+                                <>
+                                    <div className="ipdj-field">
+                                        <label>Observaciones (opcional)</label>
+                                        <textarea
+                                            rows={3}
+                                            value={observaciones}
+                                            onChange={(e) =>
+                                                setObservaciones(e.target.value)
+                                            }
+                                            placeholder="Añade una nota para esta acción..."
+                                        />
+                                    </div>
+
+                                    <div
+                                        className="ipdj-actions-cell"
+                                        style={{ marginBottom: 12 }}
+                                    >
+                                        <button
+                                            className="ipdj-btn-save"
+                                            disabled={complete.isPending}
+                                            onClick={() =>
+                                                handleComplete("aceptado")
+                                            }
+                                        >
+                                            Aceptar continuar
+                                        </button>
+                                        <button
+                                            className="ipdj-btn-save"
+                                            disabled={complete.isPending}
+                                            onClick={() =>
+                                                handleComplete("rechazado")
+                                            }
+                                        >
+                                            Rechazar continuar
+                                        </button>
+                                    </div>
+                                    <button
+                                        className="ipdj-filter-btn"
+                                        style={{
+                                            marginTop: 8,
+                                            width: "100%",
+                                            justifyContent: "center",
+                                        }}
+                                        onClick={() =>
+                                            openEditModal(modalCita.id_cita)
+                                        }
+                                    >
+                                        Reagendar
+                                    </button>
+
+                                    <div className="ipdj-danger-zone">
+                                        <div className="dz-title">
+                                            Zona de riesgo
+                                        </div>
+                                        <button
+                                            className="ipdj-btn-danger"
+                                            disabled={cancel.isPending}
+                                            onClick={handleCancel}
+                                        >
+                                            Cancelar cita
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {editCita && (
+                <ReagendarModal
+                    cita={editCita}
+                    solicitud={solicitudPorId.get(editCita.id_solicitud)}
+                    onClose={closeEditModal}
+                    onSubmit={(data) => {
+                        reschedule.mutate(
+                            { id: editCita.id_cita, data },
+                            { onSuccess: () => closeEditModal() },
+                        );
+                    }}
+                    isLoading={reschedule.isPending}
+                    errorMsg={
+                        reschedule.isError
+                            ? reschedule.error instanceof Error
+                                ? reschedule.error.message
+                                : "No se pudo reagendar la cita."
+                            : null
+                    }
                 />
               </div>
               {modalSolicitud && (
