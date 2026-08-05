@@ -1,21 +1,27 @@
-import { useNavigate } from "react-router-dom";
 import { useMisEventos } from "@/features/eventos/hooks/useEventos";
+import type { EstadoEvento, TipoEvento } from "@ipartydjs/shared";
 
-const TIPO_EVENTO_LABEL: Record<string, string> = {
+const TIPO_EVENTO_VIEW: Record<TipoEvento, string> = {
     boda: "Boda",
-    xv_anos: "XV años",
-    cumpleanos: "Cumpleaños",
+    xv_anos: "XV Años",
     corporativo: "Corporativo",
-    otro: "Evento",
+    cumpleanos: "Cumpleaños",
+    otro: "Otro",
+};
+
+const STATUS_COLOR: Record<EstadoEvento, string> = {
+    confirmado: "badge-gold",
+    en_preparacion: "badge-blue",
+    realizado: "badge-green",
 };
 
 export default function MisEventos() {
     const { data: eventos, isLoading, isError, error } = useMisEventos();
-    const navigate = useNavigate();
 
     return (
-        <div className="solicitudes-page">
+        <div className="mc-main">
             <h1>Mis eventos</h1>
+            <br />
 
             {isLoading && <p>Cargando...</p>}
             {isError && (
@@ -26,34 +32,27 @@ export default function MisEventos() {
                 </p>
             )}
 
-            <div className="solicitudes-grid">
+            <div className="ms-list">
                 {eventos?.map((evento) => (
-                    <div key={evento.id_evento} className="solicitud-card">
-                        <p className="solicitud-tipo">
-                            {TIPO_EVENTO_LABEL[evento.tipo_evento] ??
-                                evento.tipo_evento}
-                        </p>
-                        <p>
-                            Fecha:{" "}
-                            {new Date(evento.fecha_hora).toLocaleString()}
-                        </p>
-                        <p>Dirección: {evento.direccion}</p>
-                        <p>
-                            Estado:{" "}
+                    <div key={evento.id_evento} className="ms-card">
+                        <div className="ms-card-top">
+                            <span className="ms-card-tipo">
+                                {TIPO_EVENTO_VIEW[evento.tipo_evento]}
+                            </span>
                             <span
-                                className={`badge badge-evento-${evento.estado}`}
+                                className={`ms-badge ${STATUS_COLOR[evento.estado]}`}
                             >
                                 {evento.estado}
                             </span>
-                        </p>
-                        <button
-                            className="btn-secondary"
-                            onClick={() =>
-                                navigate(`/eventos/${evento.id_evento}`)
-                            }
-                        >
-                            Ver detalle
-                        </button>
+                        </div>
+
+                        <div className="ms-card-meta">
+                            <span>
+                                {new Date(evento.fecha_hora).toLocaleString()}
+                            </span>
+                            <span className="ms-dot">·</span>
+                            <span>{evento.direccion}</span>
+                        </div>
                     </div>
                 ))}
             </div>
