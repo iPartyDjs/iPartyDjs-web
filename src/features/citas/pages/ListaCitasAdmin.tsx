@@ -438,7 +438,7 @@ export default function ListaCitasAdmin() {
     );
 
     return (
-        <AdminPageShell topbarTitle="Citas" key="citas">
+        <AdminPageShell key="citas" topbarTitle="Citas">
             <div className="mc-main">{mainContent}</div>
 
             {modalCita && (
