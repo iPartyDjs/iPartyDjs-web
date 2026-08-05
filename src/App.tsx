@@ -13,7 +13,7 @@ import AdminLogin from "./features/auth/admin/Adminlogin";
 import AdminUsersDashboard from "./features/auth/admin/Adminuserdashboard";
 import AdminPhotosGallery from "./features/auth/admin/AdminPhotosGallery";
 import RequireAdminAuth from "./features/auth/admin/RequireAdminAuth";
-import Admincitas from "./features/auth/admin/Admincitas";
+//import Admincitas from "./features/auth/admin/Admincitas";
 import Admineventos from "./features/auth/admin/Admineventos";
 import Adminresenas from "./features/auth/admin/Adminresenas";
 import Adminsolicitudes from "./features/auth/admin/Adminsolicitudes";
@@ -28,125 +28,123 @@ import EventRequest from "./features/solicitudes/pages/EventRequest";
 import MisCitas from "./features/citas/pages/MisCitas";
 import MisResenias from "./features/resenias/pages/MisResenias";
 import MisEventos from "./features/eventos/pages/MisEventos";
+import ListaCitasAdmin from "./features/citas/pages/ListaCitasAdmin";
 
 // Componente Wrapper para activar el cursor en TODA la app
 const GlobalCursor = () => {
-    useCursor(true);
-    return null;
+  useCursor(true);
+  return null;
 };
 
 function App() {
-    return (
-        <>
-            <GlobalCursor />
+  return (
+    <>
+      <GlobalCursor />
 
-            <Routes>
-                {/* Rutas públicas */}
-                <Route element={<GuestLayout />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/registro" element={<Register />} />
-                    <Route path="/admin" element={<AdminLogin />} />
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                </Route>
+      <Routes>
+        {/* Rutas públicas */}
+        <Route element={<GuestLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/registro" element={<Register />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+        </Route>
 
-                {/* Rutas privadas — panel CLIENTE */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <PrivateRoute>
-                            <DashboardLayout />
-                        </PrivateRoute>
-                    }
-                >
-                    <Route index element={<ClientDashboard />} />
-                    <Route path="solicitudes" element={<MisSolicitudes />} />
-                    <Route
-                        path="solicitudes/nueva"
-                        element={<CrearSolicitud />}
-                    />
-                    <Route path="old/n" element={<EventRequest />} />
-                    <Route path="citas" element={<MisCitas />} />
-                    <Route path="eventos" element={<MisEventos />} />
-                    <Route path="resenias" element={<MisResenias />} />
-                    <Route path="Reviewform" element={<ReviewForm />} />
-                    <Route path="profile" element={<Profile />} />
-                </Route>
+        {/* Rutas privadas — panel CLIENTE */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <DashboardLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<ClientDashboard />} />
+          <Route path="solicitudes" element={<MisSolicitudes />} />
+          <Route path="solicitudes/nueva" element={<CrearSolicitud />} />
+          <Route path="old/n" element={<EventRequest />} />
+          <Route path="citas" element={<MisCitas />} />
+          <Route path="eventos" element={<MisEventos />} />
+          <Route path="resenias" element={<MisResenias />} />
+          <Route path="Reviewform" element={<ReviewForm />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
 
-                {/* Rutas privadas — panel ADMIN */}
-                <Route
-                    path="/dashboard/admin"
-                    element={
-                        <RequireAdminAuth>
-                            <AdminUsersDashboard />
-                        </RequireAdminAuth>
-                    }
-                />
+        {/* Rutas privadas — panel ADMIN */}
+        <Route
+          path="/dashboard/admin"
+          element={
+            <RequireAdminAuth>
+              <AdminUsersDashboard />
+            </RequireAdminAuth>
+          }
+        />
 
-                <Route
-                    path="/dashboard/admin/usuarios"
-                    element={
-                        <RequireAdminAuth>
-                            <AdminUsersDashboard />
-                        </RequireAdminAuth>
-                    }
-                />
-                <Route
-                    path="/dashboard/admin/fotografias"
-                    element={
-                        <RequireAdminAuth>
-                            <AdminPhotosGallery />
-                        </RequireAdminAuth>
-                    }
-                />
-                <Route
-                    path="/dashboard/admin/citas"
-                    element={
-                        <RequireAdminAuth>
-                            <Admincitas />
-                        </RequireAdminAuth>
-                    }
-                />
+        <Route
+          path="/dashboard/admin/usuarios"
+          element={
+            <RequireAdminAuth>
+              <AdminUsersDashboard />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/dashboard/admin/fotografias"
+          element={
+            <RequireAdminAuth>
+              <AdminPhotosGallery />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/dashboard/admin/citas"
+          element={
+            <RequireAdminAuth>
+              <ListaCitasAdmin />
+            </RequireAdminAuth>
+          }
+        />
 
-                <Route
-                    path="/dashboard/admin/eventos"
-                    element={
-                        <RequireAdminAuth>
-                            <Admineventos />
-                        </RequireAdminAuth>
-                    }
-                />
+        <Route
+          path="/dashboard/admin/eventos"
+          element={
+            <RequireAdminAuth>
+              <Admineventos />
+            </RequireAdminAuth>
+          }
+        />
 
-                <Route
-                    path="/dashboard/admin/resenas"
-                    element={
-                        <RequireAdminAuth>
-                            <Adminresenas />
-                        </RequireAdminAuth>
-                    }
-                />
+        <Route
+          path="/dashboard/admin/resenas"
+          element={
+            <RequireAdminAuth>
+              <Adminresenas />
+            </RequireAdminAuth>
+          }
+        />
 
-                <Route
-                    path="/dashboard/admin/solicitudes"
-                    element={
-                        <RequireAdminAuth>
-                            <Adminsolicitudes />
-                        </RequireAdminAuth>
-                    }
-                />
+        <Route
+          path="/dashboard/admin/solicitudes"
+          element={
+            <RequireAdminAuth>
+              <Adminsolicitudes />
+            </RequireAdminAuth>
+          }
+        />
 
-                <Route
-                    path="/dashboard/admin/reportes"
-                    element={
-                        <RequireAdminAuth>
-                            <Adminreportes />
-                        </RequireAdminAuth>
-                    }
-                />
-            </Routes>
-        </>
-    );
+        <Route
+          path="/dashboard/admin/reportes"
+          element={
+            <RequireAdminAuth>
+              <Adminreportes />
+            </RequireAdminAuth>
+          }
+        />
+      </Routes>
+    </>
+  );
 }
 
 export default App;
