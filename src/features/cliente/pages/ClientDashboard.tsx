@@ -1,15 +1,22 @@
+import { useProfile } from "@/features/profile/hooks/useProfile";
 import React from "react";
 
 export const ClientDashboard: React.FC = () => {
+    const { data: user, isLoading } = useProfile();
+
+    if (isLoading) {
+        return <div className="profile-page">Cargando perfil...</div>;
+    }
+
     return (
         <div className="dashboard-container">
             {/* ── CONTENIDO PRINCIPAL ── */}
             <main className="main-content">
                 <header className="dashboard-header">
-                    <h1 className="welcome-title">Hola, María 👋</h1>
+                    <h1 className="welcome-title">Hola, {user?.nombre} 👋</h1>
                     <p className="welcome-subtitle">
-                        Martes, 10 de junio de 2025 · Tu próxima cita es en 3
-                        días
+                        {new Date().toLocaleDateString()}· Tu próxima cita es en
+                        3 días
                     </p>
                 </header>
 

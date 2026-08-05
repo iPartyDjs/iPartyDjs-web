@@ -7,7 +7,6 @@ import {
     type CreateReviewInput,
     type RequestReviewEditionInput,
 } from "@ipartydjs/shared";
-import "../pages/resenias.css";
 
 export interface EventoOption {
     id_evento: string;

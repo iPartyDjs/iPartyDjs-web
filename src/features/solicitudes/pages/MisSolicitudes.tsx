@@ -96,9 +96,13 @@ export default function MisSolicitudes() {
                         <div
                             key={s.id_solicitud}
                             className={`ms-card`}
-                            onClick={() =>
-                                setSelectedSolicitudId(s.id_solicitud)
-                            }
+                            onClick={() => {
+                                if (s.estado == "pendiente") {
+                                    return setSelectedSolicitudId(
+                                        s.id_solicitud,
+                                    );
+                                }
+                            }}
                         >
                             <div className="ms-card-top">
                                 <span className="ms-card-tipo">
