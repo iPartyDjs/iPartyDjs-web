@@ -458,12 +458,11 @@ export default function AdminPhotosGallery() {
                         src={p.url_imagen}
                         alt={p.titulo}
                         style={{
-                            background: "#18181b",
-                            padding: "4px",
-                            borderRadius: "8px",
-                            border: "1px solid #27272a",
-                            display: "flex",
-                            gap: "4px",
+                          width: "64px",
+                          height: "48px",
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          border: "1px solid #3f3f46",
                         }}
                       />
                     </td>
@@ -686,9 +685,13 @@ export default function AdminPhotosGallery() {
                   Archivo de imagen
                 </label>
                 <input
-                    type="text"
-                    value={displayTitle}
-                    onChange={(e) => handleDraftChange("title", e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setNewFile(e.target.files ? e.target.files[0] : null)
+                  }
+                  required
+                  style={{ width: "100%", color: "#fff" }}
                 />
               </div>
               <div style={{ marginBottom: "12px" }}>
@@ -725,15 +728,8 @@ export default function AdminPhotosGallery() {
                     color: "#ccc",
                   }}
                 >
-                    {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>
-                            {c}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div className="ipdj-field">
-                <label>Evento asociado</label>
+                  Descripción
+                </label>
                 <input
                   type="text"
                   value={newDescripcion}
