@@ -3,7 +3,12 @@ import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
 import "./AdminPageShell.css";
 
 interface AdminPageShellProps {
-  /** Título mostrado en la barra superior gris. */
+  /**
+   * Título de la pantalla. Ya no se renderiza como barra superior visible
+   * (se eliminó esa franja porque no se veía bien y Usuarios nunca la
+   * tuvo), pero se conserva la prop por si se usa para <title> del
+   * documento o accesibilidad en el futuro.
+   */
   topbarTitle: string;
 
   /**
@@ -24,23 +29,23 @@ interface AdminPageShellProps {
 
 /**
  * Shell compartido por todas las pantallas del panel de administración
- * (Usuarios, Fotografías, Citas, Eventos, Reseñas, Solicitudes, Reportes).
- * Contiene: topbar, sidebar de navegación real (react-router) y el grid
- * de 2 o 3 columnas. Cada pantalla solo aporta su contenido central y,
- * si aplica, su panel lateral de detalle/edición.
+ * (Usuarios, Fotografías, Citas, Eventos, Solicitudes, Reportes).
+ * Contiene: sidebar de navegación real (react-router) y el grid de 2 o 3
+ * columnas. Cada pantalla solo aporta su contenido central y, si aplica,
+ * su panel lateral de detalle/edición.
+ *
+ * NOTA: antes había una barra superior (.ipdj-topbar) con <h1>{topbarTitle}</h1>.
+ * Se eliminó porque se veía como una franja fea/duplicada en todas las
+ * pantallas excepto Usuarios (que nunca la tuvo). Ver AdminPageShell.css
+ * para el ajuste de layout correspondiente.
  */
 export default function AdminPageShell({
-  topbarTitle,
   navKey,
   children,
   sidePanel,
 }: AdminPageShellProps) {
   return (
     <div className="ipdj-app">
-      <div className="ipdj-topbar">
-        <h1>{topbarTitle}</h1>
-      </div>
-
       <div className={sidePanel ? "ipdj-layout with-panel" : "ipdj-layout"}>
         <AdminSidebar active={navKey} />
         <main className="main-content">{children}</main>

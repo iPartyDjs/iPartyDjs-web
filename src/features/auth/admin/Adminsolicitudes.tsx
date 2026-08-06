@@ -63,7 +63,6 @@ export default function AdminSolicitudes() {
   };
 
   /* -------- Datos -------- */
-  // Query de la tabla: respeta el filtro de estado + paginación real del backend.
   const solicitudesQuery = useQuery({
     queryKey: ["solicitudes", filtroEstado, page],
     queryFn: () =>
@@ -73,8 +72,6 @@ export default function AdminSolicitudes() {
       ),
   });
 
-  // Query aparte, siempre sin filtro, exclusiva para las tarjetas de stats —
-  // mismo patrón que ya usamos en Fotografías para que no se vayan a 0 al filtrar.
   const statsQuery = useQuery({
     queryKey: ["solicitudes", "stats"],
     queryFn: () => listSolicitudes({}, { page: 1, limit: 100 }),
@@ -90,8 +87,6 @@ export default function AdminSolicitudes() {
   const solicitudesFiltradas = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     if (!q) return solicitudes;
-    // No hay búsqueda de texto en el backend (SolicitudFiltersSchema solo
-    // acepta `estado`) — se filtra en el cliente sobre la página actual.
     return solicitudes.filter((s) => {
       return (
         s.tipo_evento.toLowerCase().includes(q) ||
@@ -191,6 +186,16 @@ export default function AdminSolicitudes() {
         )
       }
     >
+      {/* Encabezado */}
+      <div className="ipdj-main-header">
+        <div>
+          <h2>Solicitudes</h2>
+          <p>
+            Administra las solicitudes de eventos recibidas de los clientes.
+          </p>
+        </div>
+      </div>
+
       {/* Estadísticas */}
       <div className="ipdj-solic-stats">
         <StatCard label="Total de solicitudes" valor={stats.total} />
@@ -474,10 +479,6 @@ function PanelDetalleSolicitud({
         })}
       </span>
 
-      {/* Acciones según el estado real del ciclo de vida:
-          pendiente -> (aprobar) en_proceso -> (completar) completada
-          pendiente -> (rechazar) rechazada
-          completada/rechazada son terminales, sin acciones. */}
       <div className="ipdj-panel-solic-acciones">
         {solicitud.estado === "pendiente" && (
           <>

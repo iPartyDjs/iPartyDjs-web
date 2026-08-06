@@ -13,7 +13,11 @@ const Contact = () => {
     nombre: "",
     email: "",
     telefono: "",
-    tipo_evento: "boda",
+    // Vacío a propósito: así el <select> muestra el placeholder
+    // "Selecciona..." en vez de venir con "Boda" preseleccionado. El
+    // atributo `required` del <select> obliga a elegir una opción real
+    // antes de poder enviar el formulario.
+    tipo_evento: "" as CreateContactInput["tipo_evento"],
     fecha_deseada: undefined,
     lugar: "",
     mensaje: "",
