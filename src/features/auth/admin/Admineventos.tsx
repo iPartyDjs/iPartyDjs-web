@@ -776,15 +776,15 @@ export default function AdminEventos() {
                             )}
 
                             {reseniaEdicionPendiente && (
-                                <p
-                                    style={{
-                                        fontSize: "0.8rem",
-                                        color: "#8a8578",
-                                    }}
-                                >
-                                    Edición pendiente: aprobarla no está
-                                    soportado todavía en el backend.
-                                </p>
+                                <div className="ipdj-actions-cell">
+                                    <button
+                                        className="ipdj-btn-save"
+                                        disabled={aprobarResenia.isPending}
+                                        onClick={handleAprobarResenia}
+                                    >
+                                        Aprobar edición
+                                    </button>
+                                </div>
                             )}
 
                             {resenia.estado === "aprobado" &&

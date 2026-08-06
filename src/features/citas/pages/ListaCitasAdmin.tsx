@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueries } from "@tanstack/react-query";
 import type { z } from "zod";
@@ -70,12 +70,6 @@ export default function ListaCitasAdmin() {
     const cancel = useCancelCita();
     const complete = useCompleteCita();
     const reschedule = useRescheduleCita();
-
-    // Reset de página al cambiar cualquier filtro, para no quedar en una
-    // página que ya no existe con el nuevo conjunto filtrado.
-    useEffect(() => {
-        setPage(1);
-    }, [estado, desde, hasta, search]);
 
     const idsSolicitudUnicos = useMemo(() => {
         if (!citas) return [];
