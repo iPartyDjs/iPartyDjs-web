@@ -31,7 +31,10 @@ export default function AgendarCita({
   const { data: solicitudesPage, isLoading: loadingSolicitudes } =
     useListAllSolicitudes("en_proceso", 1, 100);
 
-  const solicitudesEnProceso = solicitudesPage?.data ?? [];
+  const solicitudesEnProceso = useMemo(
+    () => solicitudesPage?.data ?? [],
+    [solicitudesPage],
+  );
 
   // El backend NO impide agendar una segunda cita 'programada' sobre la
   // misma solicitud (solo valida el estado de la solicitud, no si ya
