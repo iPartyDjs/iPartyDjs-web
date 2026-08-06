@@ -3,14 +3,23 @@ import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
 import "./AdminPageShell.css";
 
 interface AdminPageShellProps {
-    /** Título mostrado en la barra superior gris. */
-    topbarTitle: string;
+  /** Título mostrado en la barra superior gris. */
+  topbarTitle: string;
 
-    key: AdminNavKey;
-    /** Contenido central (stats, filtros, tabla/grid, paginación). */
-    children: ReactNode;
-    /** Panel derecho opcional (detalle/edición). Si se omite, el main ocupa el espacio restante. */
-    sidePanel?: ReactNode;
+  /**
+   * Identifica qué ítem del sidebar debe marcarse como activo.
+   * IMPORTANTE: se llama `navKey` (no `key`) a propósito. `key` es una
+   * prop reservada por React para reconciliar listas: si un componente
+   * declara una prop propia llamada `key`, React la intercepta antes de
+   * que llegue al componente y siempre resulta en `undefined` dentro de
+   * él, además de emitir el warning "`key` is not a prop". Por eso NUNCA
+   * se debe nombrar así una prop propia.
+   */
+  navKey: AdminNavKey;
+  /** Contenido central (stats, filtros, tabla/grid, paginación). */
+  children: ReactNode;
+  /** Panel derecho opcional (detalle/edición). Si se omite, el main ocupa el espacio restante. */
+  sidePanel?: ReactNode;
 }
 
 /**
@@ -21,26 +30,22 @@ interface AdminPageShellProps {
  * si aplica, su panel lateral de detalle/edición.
  */
 export default function AdminPageShell({
-    topbarTitle,
-    key,
-    children,
-    sidePanel,
+  topbarTitle,
+  navKey,
+  children,
+  sidePanel,
 }: AdminPageShellProps) {
-    return (
-        <div className="ipdj-app">
-            <div className="ipdj-topbar">
-                <h1>{topbarTitle}</h1>
-            </div>
+  return (
+    <div className="ipdj-app">
+      <div className="ipdj-topbar">
+        <h1>{topbarTitle}</h1>
+      </div>
 
-            <div
-                className={sidePanel ? "ipdj-layout with-panel" : "ipdj-layout"}
-            >
-                <AdminSidebar active={key} />
-                <main className="main-content">{children}</main>
-                {sidePanel && (
-                    <aside className="ipdj-edit-panel">{sidePanel}</aside>
-                )}
-            </div>
-        </div>
-    );
+      <div className={sidePanel ? "ipdj-layout with-panel" : "ipdj-layout"}>
+        <AdminSidebar active={navKey} />
+        <main className="main-content">{children}</main>
+        {sidePanel && <aside className="ipdj-edit-panel">{sidePanel}</aside>}
+      </div>
+    </div>
+  );
 }

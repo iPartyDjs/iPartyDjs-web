@@ -457,7 +457,7 @@ export default function AdminCitas() {
   );
 
   return (
-    <AdminPageShell key="eventos" topbarTitle="Citas" sidePanel={sidePanel}>
+    <AdminPageShell topbarTitle="Citas" navKey="citas" sidePanel={sidePanel}>
       {mainContent}
     </AdminPageShell>
   );

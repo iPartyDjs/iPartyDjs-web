@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./AdminSidebar.css";
 
 export type AdminNavKey =
@@ -9,8 +10,7 @@ export type AdminNavKey =
   | "eventos"
   | "resenas"
   | "solicitudes"
-  | "reportes"
-  | "ajustes";
+  | "reportes";
 
 interface NavItem {
   key: AdminNavKey;
@@ -21,12 +21,37 @@ interface NavItem {
 
 interface AdminSidebarProps {
   active: AdminNavKey;
+  /**
+   * Opcional: si se pasa, se usa en vez de la navegación por defecto
+   * (útil para tests o para interceptar la navegación). Si se omite,
+   * el sidebar navega directamente con React Router usando ROUTES_BY_KEY.
+   */
   onNavigate?: (key: AdminNavKey) => void;
   onLogout?: () => void;
   adminName?: string;
   adminRole?: string;
   counts?: Partial<Record<AdminNavKey, number>>;
 }
+
+/**
+ * Mapeo 1:1 entre cada ítem del sidebar y su ruta real, tal como están
+ * declaradas en App.tsx bajo /dashboard/admin/*. Antes el sidebar llamaba
+ * a `onNavigate?.(key)`, pero AdminPageShell nunca pasaba esa prop, así
+ * que ningún botón navegaba a ningún lado realmente.
+ *
+ * NOTA: "ajustes" no tiene ruta registrada todavía en App.tsx. Si haces
+ * clic ahí y no pasa nada (o da 404), hay que agregar esa <Route> primero.
+ */
+const ROUTES_BY_KEY: Record<AdminNavKey, string> = {
+  dashboard: "/dashboard/admin",
+  usuarios: "/dashboard/admin/usuarios",
+  fotografias: "/dashboard/admin/fotografias",
+  citas: "/dashboard/admin/citas",
+  eventos: "/dashboard/admin/eventos",
+  resenas: "/dashboard/admin/resenas",
+  solicitudes: "/dashboard/admin/solicitudes",
+  reportes: "/dashboard/admin/reportes",
+};
 
 /* ---------------------------------------------------
    Iconos de navegación (inline SVG, trazo fino)
@@ -123,17 +148,6 @@ const icons: Record<AdminNavKey, React.ReactNode> = {
       <path d="M2.5 20.5h19" />
     </svg>
   ),
-  ajustes: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 13a7.6 7.6 0 0 0 .1-2l1.9-1.5-2-3.4-2.3.6a7.7 7.7 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.7 7.7 0 0 0-1.7 1l-2.3-.6-2 3.4L6.5 11a7.6 7.6 0 0 0 0 2l-1.9 1.5 2 3.4 2.3-.6a7.7 7.7 0 0 0 1.7 1L11 21h4l.4-2.7a7.7 7.7 0 0 0 1.7-1l2.3.6 2-3.4Z" />
-    </svg>
-  ),
 };
 
 const LogoutIcon = () => (
@@ -161,6 +175,16 @@ export default function AdminSidebar({
   adminRole = "Superadmin",
   counts = {},
 }: AdminSidebarProps) {
+  const navigate = useNavigate();
+
+  function handleNavigate(key: AdminNavKey) {
+    if (onNavigate) {
+      onNavigate(key);
+      return;
+    }
+    navigate(ROUTES_BY_KEY[key]);
+  }
+
   const initials = adminName
     .split(" ")
     .map((p) => p.charAt(0))
@@ -183,7 +207,7 @@ export default function AdminSidebar({
               <button
                 type="button"
                 className={`admin-nav-item ${active === item.key ? "is-active" : ""}`}
-                onClick={() => onNavigate?.(item.key)}
+                onClick={() => handleNavigate(item.key)}
               >
                 <span className="admin-nav-icon">{item.icon}</span>
                 <span className="admin-nav-label">{item.label}</span>
@@ -197,16 +221,6 @@ export default function AdminSidebar({
 
         <p className="admin-sidebar-group-label">Sistema</p>
         <ul>
-          <li>
-            <button
-              type="button"
-              className={`admin-nav-item ${active === "ajustes" ? "is-active" : ""}`}
-              onClick={() => onNavigate?.("ajustes")}
-            >
-              <span className="admin-nav-icon">{icons.ajustes}</span>
-              <span className="admin-nav-label">Ajustes</span>
-            </button>
-          </li>
           <li>
             <button
               type="button"

@@ -123,7 +123,7 @@ export default function AdminReportes() {
   });
 
   return (
-    <AdminPageShell topbarTitle="Reportes" key="reportes">
+    <AdminPageShell topbarTitle="Reportes" navKey="reportes">
       <div className="ipdj-rep-printable">
         {/* Encabezado de marca — solo visible al imprimir/exportar */}
         <div className="ipdj-rep-print-header">

@@ -77,14 +77,24 @@ export default function AdminEventos() {
   useEffect(() => {
     let isMounted = true;
 
+    // Misma extracción robusta que usamos para solicitudes: no asumimos
+    // que la propiedad se llama ".items", probamos varios nombres comunes.
+    function extractEventItems(result: unknown): EventoDTO[] {
+      if (Array.isArray(result)) return result;
+      if (result && typeof result === "object") {
+        const obj = result as Record<string, unknown>;
+        const candidate = obj.items ?? obj.data ?? obj.results ?? obj.eventos;
+        if (Array.isArray(candidate)) return candidate as EventoDTO[];
+      }
+      return [];
+    }
+
     async function fetchEvents() {
       try {
         setLoading(true);
         setError(null);
         const result = await eventoService.listAll();
-        const items = Array.isArray(result)
-          ? result
-          : ((result as { items?: EventoDTO[] }).items ?? []);
+        const items = extractEventItems(result);
 
         if (isMounted) {
           setEvents(items);
@@ -112,19 +122,36 @@ export default function AdminEventos() {
   }, [selectedId]);
 
   // Cargar solicitudes elegibles cada vez que se abre el modal de "Nuevo evento".
+  // Solo se consideran elegibles las solicitudes en estado "completada"
+  // (cita concluida con aceptación) que aún no tengan un evento creado.
+  // Las que están "en_proceso" todavía siguen en negociación y no están
+  // listas para agendarse como evento.
   useEffect(() => {
     if (!showNewEventModal) return;
 
     let isMounted = true;
 
+    // Extrae el array de resultados sin importar cómo se llame la propiedad
+    // dentro del objeto paginado (items, data, results, etc.), para no
+    // depender de una forma exacta de PaginatedResult que aún no confirmamos.
+    function extractItems(result: unknown): SolicitudEventoDTO[] {
+      if (Array.isArray(result)) return result;
+      if (result && typeof result === "object") {
+        const obj = result as Record<string, unknown>;
+        const candidate =
+          obj.items ?? obj.data ?? obj.results ?? obj.solicitudes;
+        if (Array.isArray(candidate)) return candidate as SolicitudEventoDTO[];
+      }
+      return [];
+    }
+
     async function fetchSolicitudes() {
       try {
         setLoadingSolicitudes(true);
         setErrorSolicitudes(null);
+
         const result = await solicitudService.listAll("completada", 1, 100);
-        const items = Array.isArray(result)
-          ? result
-          : ((result as { items?: SolicitudEventoDTO[] }).items ?? []);
+        const items = extractItems(result);
 
         // Excluye solicitudes que ya tienen un evento creado.
         const idsConEvento = new Set(events.map((e) => e.id_solicitud));
@@ -213,7 +240,7 @@ export default function AdminEventos() {
     }
   }
 
-  async function deleteEvent() {
+  async function markAsRealizado() {
     if (!selected) return;
     const id = selected.id_evento;
     if (!id) return;
@@ -221,8 +248,14 @@ export default function AdminEventos() {
     if (!confirm("¿Estás seguro de realizar esta acción?")) return;
 
     try {
-      await eventoService.update(id, { estado: "realizado" } as unknown);
-      setEvents((prev) => prev.filter((e) => e.id_evento !== id));
+      // El estado no se cambia con el PATCH genérico /eventos/:id (ese
+      // endpoint solo acepta fecha_hora, direccion, tipo_evento). La
+      // transición a "realizado" tiene su propio endpoint dedicado:
+      // PATCH /eventos/:id/completar, sin body.
+      const updated = await eventoService.complete(id);
+      setEvents((prev) =>
+        prev.map((e) => (e.id_evento === id ? { ...e, ...updated } : e)),
+      );
       setDraft({});
     } catch (err: unknown) {
       const errorObj = err as { message?: string };
@@ -252,6 +285,8 @@ export default function AdminEventos() {
   }
 
   async function handleCreateEvent() {
+    if (creating) return; // Evita doble envío (doble clic) que causaba 409 Conflict.
+
     setCreateError(null);
 
     if (!newEvent.id_solicitud) {
@@ -408,13 +443,33 @@ export default function AdminEventos() {
             const statusKey = e.estado ?? "confirmado";
             const statusName = STATUS_LABELS[statusKey] ?? statusKey;
 
+            const fechaFormateada = fechaHora
+              ? new Date(fechaHora).toLocaleString("es-MX", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Sin fecha";
+
             return (
               <div
                 key={id}
                 className={`ipdj-event-card${id === selected?.id_evento ? " selected" : ""}`}
                 onClick={() => select(e)}
+                style={{ padding: "1rem" }}
               >
-                <div className="ipdj-event-thumb">
+                {/* Sin placeholder de imagen: EventoDTO no tiene campo de
+                    foto, así que solo mostramos badges + datos reales. */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.75rem",
+                  }}
+                >
                   <span className="ipdj-event-category">{categoryName}</span>
                   <span
                     className="ipdj-event-inactive-badge"
@@ -434,9 +489,13 @@ export default function AdminEventos() {
                   <div className="event-title-row">
                     <div className="event-title">{direccion}</div>
                   </div>
-                  <div className="event-desc">Fecha y hora: {fechaHora}</div>
+                  <div className="event-desc">
+                    Fecha y hora: {fechaFormateada}
+                  </div>
                   <div className="event-meta">
-                    <span className="event-duration">ID: {e.id_solicitud}</span>
+                    <span className="event-duration">
+                      Solicitud: {e.id_solicitud}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -525,7 +584,7 @@ export default function AdminEventos() {
 
       <div className="ipdj-danger-zone">
         <div className="dz-title">Zona de riesgo</div>
-        <button className="ipdj-btn-danger" onClick={deleteEvent}>
+        <button className="ipdj-btn-danger" onClick={markAsRealizado}>
           Marcar como realizado
         </button>
       </div>
@@ -677,6 +736,21 @@ export default function AdminEventos() {
               </table>
             </div>
           )}
+
+          {!loadingSolicitudes &&
+            solicitudesDisponibles.length > 0 &&
+            !newEvent.id_solicitud && (
+              <div
+                style={{
+                  color: "#c9a84c",
+                  fontSize: "0.85rem",
+                  padding: "0.5rem 0 0",
+                }}
+              >
+                ↑ Haz clic en una fila de la tabla para seleccionar la solicitud
+                antes de crear el evento.
+              </div>
+            )}
         </div>
 
         <div className="ipdj-field">
@@ -720,11 +794,22 @@ export default function AdminEventos() {
           </select>
         </div>
 
+        {createError && (
+          <div style={{ color: "red", marginTop: "0.75rem" }}>
+            {createError}
+          </div>
+        )}
+
         <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
           <button
             className="ipdj-btn-gold"
             onClick={handleCreateEvent}
-            disabled={creating}
+            disabled={creating || !newEvent.id_solicitud}
+            title={
+              !newEvent.id_solicitud
+                ? "Selecciona una solicitud de la tabla primero"
+                : undefined
+            }
           >
             {creating ? "Creando..." : "Crear evento"}
           </button>
@@ -735,7 +820,11 @@ export default function AdminEventos() {
   ) : null;
 
   return (
-    <AdminPageShell topbarTitle="Eventos" key="eventos" sidePanel={sidePanel}>
+    <AdminPageShell
+      topbarTitle="Eventos"
+      navKey="eventos"
+      sidePanel={sidePanel}
+    >
       {mainContent}
       {newEventModal}
     </AdminPageShell>
