@@ -4,6 +4,7 @@ import { useListAllEventos } from "@/features/eventos/hooks/useEventos";
 import { useReseniaByEvento } from "@/features/resenias/hooks/useResenias";
 import type { EventoDTO } from "@ipartydjs/shared";
 
+/** Borrar */
 function FilaReseniaEvento({ evento }: { evento: EventoDTO }) {
     const { data: resenia, isLoading } = useReseniaByEvento(evento.id_evento);
     const navigate = useNavigate();
