@@ -4,15 +4,15 @@ import Footer from "@/shared/Footer";
 import { useCursor } from "@/core/hooks/useCursor";
 
 export default function GuestLayout() {
-    useCursor();
+  useCursor();
 
-    return (
-        <div className="guest-layout">
-            <Navbar />
-            <main className="guest-layout__content">
-                <Outlet />
-            </main>
-            <Footer />
-        </div>
-    );
+  return (
+    <div className="guest-layout">
+      <Navbar />
+      <main className="guest-layout__content">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
 }
