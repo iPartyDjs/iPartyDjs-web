@@ -97,13 +97,6 @@ export default function DetalleCita() {
                     </button>
                     <button
                         className="btn-reject"
-                        disabled={complete.isPending}
-                        onClick={() => handleComplete("rechazado")}
-                    >
-                        Rechazar continuar
-                    </button>
-                    <button
-                        className="btn-reject"
                         disabled={cancel.isPending}
                         onClick={handleCancel}
                     >
