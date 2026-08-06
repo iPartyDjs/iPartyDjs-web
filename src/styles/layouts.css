@@ -924,7 +924,7 @@
   max-width: 1000px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2px;
 }
 
@@ -1216,19 +1216,11 @@
   }
 
   .stats-inner {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stat-item:nth-child(2)::after {
-    display: none;
-  }
-
-  .stat-item:nth-child(3)::after {
-    display: block;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .stats-inner {
     grid-template-columns: 1fr;
   }

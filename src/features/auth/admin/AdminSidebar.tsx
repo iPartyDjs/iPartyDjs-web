@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import "./AdminSidebar.css";
 
 export type AdminNavKey =
@@ -8,7 +9,6 @@ export type AdminNavKey =
   | "fotografias"
   | "citas"
   | "eventos"
-  | "resenas"
   | "solicitudes"
   | "reportes";
 
@@ -48,7 +48,6 @@ const ROUTES_BY_KEY: Record<AdminNavKey, string> = {
   fotografias: "/dashboard/admin/fotografias",
   citas: "/dashboard/admin/citas",
   eventos: "/dashboard/admin/eventos",
-  resenas: "/dashboard/admin/resenas",
   solicitudes: "/dashboard/admin/solicitudes",
   reportes: "/dashboard/admin/reportes",
 };
@@ -116,16 +115,6 @@ const icons: Record<AdminNavKey, React.ReactNode> = {
       <path d="M6.5 21c0-4.5 2.4-7 5.5-7s5.5 2.5 5.5 7" />
     </svg>
   ),
-  resenas: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-    >
-      <path d="M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z" />
-    </svg>
-  ),
   solicitudes: (
     <svg
       viewBox="0 0 24 24"
@@ -162,7 +151,6 @@ const NAV_MAIN: NavItem[] = [
   { key: "fotografias", label: "Fotografías", icon: icons.fotografias },
   { key: "citas", label: "Citas", icon: icons.citas },
   { key: "eventos", label: "Eventos", icon: icons.eventos },
-  { key: "resenas", label: "Reseñas", icon: icons.resenas },
   { key: "solicitudes", label: "Solicitudes", icon: icons.solicitudes },
   { key: "reportes", label: "Reportes", icon: icons.reportes },
 ];
@@ -176,6 +164,7 @@ export default function AdminSidebar({
   counts = {},
 }: AdminSidebarProps) {
   const navigate = useNavigate();
+  const logoutFromHook = useLogout();
 
   function handleNavigate(key: AdminNavKey) {
     if (onNavigate) {
@@ -183,6 +172,18 @@ export default function AdminSidebar({
       return;
     }
     navigate(ROUTES_BY_KEY[key]);
+  }
+
+  // Igual que con la navegación: si no pasan onLogout explícito, se usa
+  // el hook useLogout() de verdad, en vez de quedar en undefined (que era
+  // por qué el botón "Salir" no hacía nada — AdminPageShell nunca pasaba
+  // esta prop).
+  function handleLogout() {
+    if (onLogout) {
+      onLogout();
+      return;
+    }
+    logoutFromHook();
   }
 
   const initials = adminName
@@ -225,7 +226,7 @@ export default function AdminSidebar({
             <button
               type="button"
               className="admin-nav-item admin-nav-item--logout"
-              onClick={onLogout}
+              onClick={handleLogout}
             >
               <span className="admin-nav-icon">
                 <LogoutIcon />
