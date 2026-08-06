@@ -1033,7 +1033,7 @@ export default function AdminPhotosGallery() {
 
     return (
         <AdminPageShell
-            key="fotografias"
+            navKey="fotografias"
             topbarTitle="Fotografías"
             sidePanel={sidePanel}
         >
