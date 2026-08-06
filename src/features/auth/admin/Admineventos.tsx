@@ -458,10 +458,15 @@ export default function AdminEventos() {
                 key={id}
                 className={`ipdj-event-card${id === selected?.id_evento ? " selected" : ""}`}
                 onClick={() => select(e)}
-                style={{ padding: "1rem" }}
+                style={{ padding: "1rem", position: "relative" }}
               >
                 {/* Sin placeholder de imagen: EventoDTO no tiene campo de
-                    foto, así que solo mostramos badges + datos reales. */}
+                    foto, así que solo mostramos badges + datos reales.
+                    position: static forzado en los spans porque las clases
+                    .ipdj-event-category / .ipdj-event-inactive-badge tienen
+                    position: absolute en el CSS (pensado para el thumb que
+                    ya no existe) y sin esto salían disparados a las
+                    esquinas de la pantalla. */}
                 <div
                   style={{
                     display: "flex",
@@ -470,10 +475,18 @@ export default function AdminEventos() {
                     marginBottom: "0.75rem",
                   }}
                 >
-                  <span className="ipdj-event-category">{categoryName}</span>
+                  <span
+                    className="ipdj-event-category"
+                    style={{ position: "static", top: "auto", left: "auto" }}
+                  >
+                    {categoryName}
+                  </span>
                   <span
                     className="ipdj-event-inactive-badge"
                     style={{
+                      position: "static",
+                      top: "auto",
+                      right: "auto",
                       background:
                         statusKey === "confirmado"
                           ? "#10b981"
