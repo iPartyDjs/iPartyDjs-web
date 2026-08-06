@@ -71,6 +71,9 @@ export const reseniaService = {
     async eliminar(id: string): Promise<{ message: string }> {
         const response = await apiClient.delete<DeleteResponse>(
             `/resenias/${id}`,
+            {
+                data: {},
+            },
         );
         return unwrap(response.data);
     },
