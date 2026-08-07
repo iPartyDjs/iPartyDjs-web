@@ -1,39 +1,95 @@
 import type { ReactNode } from "react";
-import AdminSidebar from "./AdminSidebar";
+import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
+import { useAuthStore } from "@/core/stores/auth.store";
 import "./AdminPageShell.css";
 
+function getUserRole(user: unknown): string | undefined {
+    if (!user || typeof user !== "object") return undefined;
+    const u = user as Record<string, unknown>;
+    if (typeof u.rol === "string") return u.rol;
+    if (typeof u.rol_nombre === "string") return u.rol_nombre;
+    if (
+        typeof u.rol === "object" &&
+        u.rol !== null &&
+        "nombre" in u.rol &&
+        typeof (u.rol as Record<string, unknown>).nombre === "string"
+    ) {
+        return (u.rol as Record<string, unknown>).nombre as string;
+    }
+    return undefined;
+}
+
 interface AdminPageShellProps {
-  /** Título mostrado en la barra superior gris. */
-  topbarTitle: string;
-  /** Contenido central (stats, filtros, tabla/grid, paginación). */
-  children: ReactNode;
-  /** Panel derecho opcional (detalle/edición). Si se omite, el main ocupa el espacio restante. */
-  sidePanel?: ReactNode;
+    /**
+     * Título de la pantalla. Ya no se renderiza como barra superior visible
+     * (se eliminó esa franja porque no se veía bien y Usuarios nunca la
+     * tuvo), pero se conserva la prop por si se usa para <title> del
+     * documento o accesibilidad en el futuro.
+     */
+    topbarTitle: string;
+
+    /**
+     * Identifica qué ítem del sidebar debe marcarse como activo.
+     * IMPORTANTE: se llama `navKey` (no `key`) a propósito. `key` es una
+     * prop reservada por React para reconciliar listas: si un componente
+     * declara una prop propia llamada `key`, React la intercepta antes de
+     * que llegue al componente y siempre resulta en `undefined` dentro de
+     * él, además de emitir el warning "`key` is not a prop". Por eso NUNCA
+     * se debe nombrar así una prop propia.
+     */
+    navKey: AdminNavKey;
+    /** Contenido central (stats, filtros, tabla/grid, paginación). */
+    children: ReactNode;
+    /** Panel derecho opcional (detalle/edición). Si se omite, el main ocupa el espacio restante. */
+    sidePanel?: ReactNode;
 }
 
 /**
  * Shell compartido por todas las pantallas del panel de administración
- * (Usuarios, Fotografías, Citas, Eventos, Reseñas, Solicitudes, Reportes).
- * Contiene: topbar, sidebar de navegación real (react-router) y el grid
- * de 2 o 3 columnas. Cada pantalla solo aporta su contenido central y,
- * si aplica, su panel lateral de detalle/edición.
+ * (Usuarios, Fotografías, Citas, Eventos, Solicitudes, Reportes).
+ * Contiene: sidebar de navegación real (react-router) y el grid de 2 o 3
+ * columnas. Cada pantalla solo aporta su contenido central y, si aplica,
+ * su panel lateral de detalle/edición.
+ *
+ * NOTA: antes había una barra superior (.ipdj-topbar) con <h1>{topbarTitle}</h1>.
+ * Se eliminó porque se veía como una franja fea/duplicada en todas las
+ * pantallas excepto Usuarios (que nunca la tuvo). Ver AdminPageShell.css
+ * para el ajuste de layout correspondiente.
  */
 export default function AdminPageShell({
-  topbarTitle,
-  children,
-  sidePanel,
+    navKey,
+    children,
+    sidePanel,
 }: AdminPageShellProps) {
-  return (
-    <div className="ipdj-app">
-      <div className="ipdj-topbar">
-        <h1>{topbarTitle}</h1>
-      </div>
+    const user = useAuthStore((s) => s.user);
 
-      <div className={sidePanel ? "ipdj-layout with-panel" : "ipdj-layout"}>
-        <AdminSidebar />
-        <main className="ipdj-main">{children}</main>
-        {sidePanel && <aside className="ipdj-edit-panel">{sidePanel}</aside>}
-      </div>
-    </div>
-  );
+    function hasName(u: unknown): u is { nombre?: string; apellido?: string } {
+        return (
+            typeof u === "object" &&
+            u !== null &&
+            ("nombre" in (u as object) || "apellido" in (u as object))
+        );
+    }
+
+    const adminName = hasName(user)
+        ? `${user.nombre ?? ""} ${user.apellido ?? ""}`.trim()
+        : undefined;
+    const adminRole = getUserRole(user);
+    return (
+        <div className="ipdj-app">
+            <div
+                className={sidePanel ? "ipdj-layout with-panel" : "ipdj-layout"}
+            >
+                <AdminSidebar
+                    active={navKey}
+                    adminName={adminName}
+                    adminRole={adminRole}
+                />
+                <main className="main-content">{children}</main>
+                {sidePanel && (
+                    <aside className="ipdj-edit-panel">{sidePanel}</aside>
+                )}
+            </div>
+        </div>
+    );
 }

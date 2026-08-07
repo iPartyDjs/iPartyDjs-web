@@ -7,24 +7,28 @@ import { useAuthStore } from "@/core/stores/auth.store";
  * no pertenece a la administración, redirige al login.
  */
 export default function RequireAdminAuth({
-  children,
+    children,
+    allowedRoles,
 }: {
-  children: React.ReactElement;
+    children: React.ReactElement;
+    /** Lista de roles permitidos para acceder a la ruta. Por defecto son los admins. */
+    allowedRoles?: string[];
 }) {
-  const token = useAuthStore((state) => state.token);
-  const user = useAuthStore((state) => state.user) as {
-    rol?: string;
-    rol_nombre?: string;
-  } | null;
+    const token = useAuthStore((state) => state.token);
+    const user = useAuthStore((state) => state.user) as {
+        rol?: string;
+        rol_nombre?: string;
+    } | null;
 
-  // Verificamos tanto 'rol_nombre' como 'rol' para evitar conflictos con la base de datos
-  const userRole = user?.rol_nombre || user?.rol || "";
-  const isStaff =
-    userRole === "administrador" || userRole === "superadministrador";
+    const userRole = user?.rol_nombre || user?.rol || "";
 
-  if (!token || !isStaff) {
-    return <Navigate to="/admin/login" replace />;
-  }
+    const allowed = allowedRoles ?? ["administrador", "superadministrador"];
 
-  return children;
+    const allowedMatch = allowed.includes(userRole);
+
+    if (!token || !allowedMatch) {
+        return <Navigate to="/admin/login" replace />;
+    }
+
+    return children;
 }

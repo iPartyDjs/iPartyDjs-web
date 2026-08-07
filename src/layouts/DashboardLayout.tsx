@@ -64,7 +64,18 @@ export default function DashboardLayout() {
                         Mis Citas
                     </NavLink>
                     <NavLink
-                        to="/dashboard/Reviewform"
+                        to="/dashboard/eventos"
+                        className={({ isActive }) =>
+                            isActive
+                                ? "dashboard-layout__link nav-item is-active"
+                                : "dashboard-layout__link nav-item"
+                        }
+                        end
+                    >
+                        Mis eventos
+                    </NavLink>
+                    <NavLink
+                        to="/dashboard/resenias"
                         className={({ isActive }) =>
                             isActive
                                 ? "dashboard-layout__link nav-item is-active"

@@ -1,299 +1,383 @@
 import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { SolicitudEventoDTO, EstadoSolicitud } from "@ipartydjs/shared";
+import {
+  listSolicitudes,
+  approveSolicitud,
+  rejectSolicitud,
+  completeSolicitud,
+} from "@/core/api/Solicitudapi";
 import AdminPageShell from "./AdminPageShell";
 import "./Adminsolicitudes.css";
 
 /* ------------------------------------------------------------------ */
-/* Tipos                                                               */
+/* Constantes                                                          */
 /* ------------------------------------------------------------------ */
 
-type EstadoSolicitud = "pendiente" | "en_revision" | "aceptada" | "rechazada";
-
-interface Solicitud {
-    id: string;
-    clienteNombre: string;
-    clienteEmail: string;
-    clienteTelefono: string;
-    tipoEvento: string; // "Boda", "XV Años", "Corporativo"...
-    fechaDeseada: string; // ISO — fecha en la que el cliente quiere el evento
-    ubicacion: string;
-    mensaje: string;
-    fechaSolicitud: string; // ISO — cuándo se envió el formulario
-    estado: EstadoSolicitud;
-}
-
-/* ------------------------------------------------------------------ */
-/* Datos de ejemplo (reemplazar por fetch/React Query en integración)  */
-/* ------------------------------------------------------------------ */
-
-const SOLICITUDES_MOCK: Solicitud[] = [
-    {
-        id: "s1",
-        clienteNombre: "Fernanda Ríos",
-        clienteEmail: "fernanda.rios@mail.com",
-        clienteTelefono: "777 123 4567",
-        tipoEvento: "Boda",
-        fechaDeseada: "2026-11-14",
-        ubicacion: "Jardín Los Encinos, Jiutepec",
-        mensaje:
-            "Buscamos DJ con ambientación para 150 invitados, ceremonia y recepción en el mismo lugar. Nos interesa el paquete premium con luces.",
-        fechaSolicitud: "2026-07-28",
-        estado: "pendiente",
-    },
-    {
-        id: "s2",
-        clienteNombre: "Javier Ochoa",
-        clienteEmail: "j.ochoa@corpmex.com",
-        clienteTelefono: "777 890 1122",
-        tipoEvento: "Corporativo",
-        fechaDeseada: "2026-09-05",
-        ubicacion: "Hotel Fiesta Inn, Cuernavaca",
-        mensaje:
-            "Cena anual de la empresa, 80 personas aproximadamente. Necesitamos audio para presentación y después ambiente para baile.",
-        fechaSolicitud: "2026-07-25",
-        estado: "en_revision",
-    },
-    {
-        id: "s3",
-        clienteNombre: "Paola Sánchez",
-        clienteEmail: "paolasanchez15@mail.com",
-        clienteTelefono: "777 456 7890",
-        tipoEvento: "XV Años",
-        fechaDeseada: "2026-10-02",
-        ubicacion: "Salón Cristal, Jiutepec",
-        mensaje:
-            "Quiero incluir el vals, sorpresa con máquina de humo y que el DJ anime el resto de la fiesta. Somos aprox 120 invitados.",
-        fechaSolicitud: "2026-07-20",
-        estado: "aceptada",
-    },
-    {
-        id: "s4",
-        clienteNombre: "Marco Delgado",
-        clienteEmail: "marco.delgado@mail.com",
-        clienteTelefono: "777 234 5566",
-        tipoEvento: "Cumpleaños",
-        fechaDeseada: "2026-08-16",
-        ubicacion: "Domicilio particular, Temixco",
-        mensaje:
-            "Fiesta pequeña, 40 personas, solo necesitamos un par de horas de música por la tarde-noche.",
-        fechaSolicitud: "2026-07-19",
-        estado: "rechazada",
-    },
-    {
-        id: "s5",
-        clienteNombre: "Grupo Alta Vista",
-        clienteEmail: "eventos@altavista.mx",
-        clienteTelefono: "777 998 4433",
-        tipoEvento: "Corporativo",
-        fechaDeseada: "2026-12-03",
-        ubicacion: "Centro de Convenciones, Cuernavaca",
-        mensaje:
-            "Evento de fin de año con 300 asistentes, requerimos escenario, iluminación robótica y DJ para toda la noche.",
-        fechaSolicitud: "2026-07-30",
-        estado: "pendiente",
-    },
-];
+const PAGE_SIZE = 10;
 
 const ESTADO_LABEL: Record<EstadoSolicitud, string> = {
-    pendiente: "Pendiente",
-    en_revision: "En revisión",
-    aceptada: "Aceptada",
-    rechazada: "Rechazada",
+  pendiente: "Pendiente",
+  en_proceso: "En proceso",
+  completada: "Completada",
+  rechazada: "Rechazada",
 };
 
-// const formateaMoneda = (valor: number) =>
-//   valor.toLocaleString("es-MX", {
-//     style: "currency",
-//     currency: "MXN",
-//     maximumFractionDigits: 0,
-//   });
-
 const formateaFecha = (iso: string, opts?: Intl.DateTimeFormatOptions) =>
-    new Date(iso).toLocaleDateString(
-        "es-MX",
-        opts ?? { day: "2-digit", month: "short", year: "numeric" },
-    );
+  new Date(iso).toLocaleDateString(
+    "es-MX",
+    opts ?? { day: "2-digit", month: "short", year: "numeric" },
+  );
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return "Ocurrió un error. Intenta de nuevo.";
+}
+
+function nombreCompleto(s: SolicitudEventoDTO): string {
+  const nombre = [s.nombre_cliente, s.apellido_cliente]
+    .filter(Boolean)
+    .join(" ");
+  return nombre || `Cliente ${s.id_cliente.slice(0, 8)}…`;
+}
 
 /* ------------------------------------------------------------------ */
 /* Componente                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function AdminSolicitudes() {
-    const [solicitudes, setSolicitudes] =
-        useState<Solicitud[]>(SOLICITUDES_MOCK);
-    const [filtroEstado, setFiltroEstado] = useState<EstadoSolicitud | "todas">(
-        "todas",
-    );
-    const [busqueda, setBusqueda] = useState("");
-    const [seleccionId, setSeleccionId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-    const solicitudesFiltradas = useMemo(() => {
-        return solicitudes
-            .filter(
-                (s) => filtroEstado === "todas" || s.estado === filtroEstado,
-            )
-            .filter((s) => {
-                if (busqueda.trim() === "") return true;
-                const q = busqueda.toLowerCase();
-                return (
-                    s.clienteNombre.toLowerCase().includes(q) ||
-                    s.tipoEvento.toLowerCase().includes(q) ||
-                    s.ubicacion.toLowerCase().includes(q)
-                );
-            })
-            .sort(
-                (a, b) =>
-                    new Date(b.fechaSolicitud).getTime() -
-                    new Date(a.fechaSolicitud).getTime(),
-            );
-    }, [solicitudes, filtroEstado, busqueda]);
+  const [filtroEstado, setFiltroEstado] = useState<EstadoSolicitud | "todas">(
+    "todas",
+  );
+  const [busqueda, setBusqueda] = useState("");
+  const [page, setPage] = useState(1);
+  const [seleccionId, setSeleccionId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [confirmingReject, setConfirmingReject] = useState<string | null>(null);
 
-    const stats = useMemo(() => {
-        const total = solicitudes.length;
-        const pendientes = solicitudes.filter(
-            (s) => s.estado === "pendiente",
-        ).length;
-        const enRevision = solicitudes.filter(
-            (s) => s.estado === "en_revision",
-        ).length;
-        const aceptadas = solicitudes.filter(
-            (s) => s.estado === "aceptada",
-        ).length;
-        return { total, pendientes, enRevision, aceptadas };
-    }, [solicitudes]);
+  const showToast = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(null), 3000);
+  };
 
-    const seleccionada = solicitudes.find((s) => s.id === seleccionId) ?? null;
+  /* -------- Datos -------- */
+  const solicitudesQuery = useQuery({
+    queryKey: ["solicitudes", filtroEstado, page],
+    queryFn: () =>
+      listSolicitudes(
+        filtroEstado === "todas" ? {} : { estado: filtroEstado },
+        { page, limit: PAGE_SIZE },
+      ),
+  });
 
-    const cambiarEstado = (id: string, estado: EstadoSolicitud) => {
-        setSolicitudes((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, estado } : s)),
-        );
+  const statsQuery = useQuery({
+    queryKey: ["solicitudes", "stats"],
+    queryFn: () => listSolicitudes({}, { page: 1, limit: 100 }),
+  });
+
+  const solicitudes = useMemo(
+    () => solicitudesQuery.data?.data ?? [],
+    [solicitudesQuery.data],
+  );
+  const total = solicitudesQuery.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const solicitudesFiltradas = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return solicitudes;
+    return solicitudes.filter((s) => {
+      return (
+        s.tipo_evento.toLowerCase().includes(q) ||
+        s.direccion.toLowerCase().includes(q) ||
+        nombreCompleto(s).toLowerCase().includes(q) ||
+        (s.email_cliente ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [solicitudes, busqueda]);
+
+  const stats = useMemo(() => {
+    const todas = statsQuery.data?.data ?? [];
+    return {
+      total: statsQuery.data?.total ?? 0,
+      pendientes: todas.filter((s) => s.estado === "pendiente").length,
+      enProceso: todas.filter((s) => s.estado === "en_proceso").length,
+      completadas: todas.filter((s) => s.estado === "completada").length,
+      rechazadas: todas.filter((s) => s.estado === "rechazada").length,
     };
+  }, [statsQuery.data]);
 
-    return (
-        <AdminPageShell
-            topbarTitle="Solicitudes"
-            sidePanel={
-                seleccionada && (
-                    <PanelDetalleSolicitud
-                        solicitud={seleccionada}
-                        onEnRevision={() =>
-                            cambiarEstado(seleccionada.id, "en_revision")
-                        }
-                        onAceptar={() =>
-                            cambiarEstado(seleccionada.id, "aceptada")
-                        }
-                        onRechazar={() =>
-                            cambiarEstado(seleccionada.id, "rechazada")
-                        }
-                        onCerrar={() => setSeleccionId(null)}
-                    />
-                )
+  const seleccionada =
+    solicitudes.find((s) => s.id_solicitud === seleccionId) ?? null;
+
+  /* -------- Mutaciones -------- */
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["solicitudes"] });
+
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => approveSolicitud(id),
+    onSuccess: () => {
+      invalidate();
+      showToast("Solicitud aprobada — ahora está en proceso.");
+    },
+    onError: (error) => showToast(getErrorMessage(error)),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => rejectSolicitud(id, {}),
+    onSuccess: () => {
+      invalidate();
+      setConfirmingReject(null);
+      showToast("Solicitud rechazada.");
+    },
+    onError: (error) => showToast(getErrorMessage(error)),
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (id: string) => completeSolicitud(id),
+    onSuccess: () => {
+      invalidate();
+      showToast("Solicitud marcada como completada.");
+    },
+    onError: (error) => showToast(getErrorMessage(error)),
+  });
+
+  const handleReject = (id: string) => {
+    if (confirmingReject !== id) {
+      setConfirmingReject(id);
+      return;
+    }
+    rejectMutation.mutate(id);
+  };
+
+  return (
+    <AdminPageShell
+      topbarTitle="Solicitudes"
+      navKey="solicitudes"
+      sidePanel={
+        seleccionada ? (
+          <PanelDetalleSolicitud
+            solicitud={seleccionada}
+            onAprobar={() => approveMutation.mutate(seleccionada.id_solicitud)}
+            onRechazar={() => handleReject(seleccionada.id_solicitud)}
+            onCompletar={() =>
+              completeMutation.mutate(seleccionada.id_solicitud)
             }
+            confirmandoRechazo={confirmingReject === seleccionada.id_solicitud}
+            cargando={
+              approveMutation.isPending ||
+              rejectMutation.isPending ||
+              completeMutation.isPending
+            }
+            onCerrar={() => setSeleccionId(null)}
+          />
+        ) : (
+          <p
+            style={{
+              color: "#71717a",
+              fontSize: "13px",
+              textAlign: "center",
+              marginTop: "40px",
+            }}
+          >
+            Selecciona una solicitud para ver su detalle.
+          </p>
+        )
+      }
+    >
+      {/* Encabezado */}
+      <div className="ipdj-main-header">
+        <div>
+          <h2>Solicitudes</h2>
+          <p>
+            Administra las solicitudes de eventos recibidas de los clientes.
+          </p>
+        </div>
+      </div>
+
+      {/* Estadísticas */}
+      <div className="ipdj-solic-stats">
+        <StatCard label="Total de solicitudes" valor={stats.total} />
+        <StatCard label="Pendientes" valor={stats.pendientes} destacado />
+        <StatCard label="En proceso" valor={stats.enProceso} />
+        <StatCard label="Completadas" valor={stats.completadas} />
+        <StatCard label="Rechazadas" valor={stats.rechazadas} />
+      </div>
+
+      {/* Filtros */}
+      <div className="ipdj-solic-filtros">
+        <input
+          type="text"
+          className="ipdj-solic-buscador"
+          placeholder="Buscar por cliente, tipo de evento o dirección..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+        <div className="ipdj-solic-chip-group">
+          {(
+            [
+              "todas",
+              "pendiente",
+              "en_proceso",
+              "completada",
+              "rechazada",
+            ] as const
+          ).map((opcion) => (
+            <button
+              key={opcion}
+              className={
+                "ipdj-solic-chip" + (filtroEstado === opcion ? " active" : "")
+              }
+              onClick={() => {
+                setFiltroEstado(opcion);
+                setPage(1);
+              }}
+            >
+              {opcion === "todas" ? "Todas" : ESTADO_LABEL[opcion]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabla */}
+      <div className="ipdj-solic-tabla-wrap">
+        {solicitudesQuery.isLoading ? (
+          <p
+            style={{
+              color: "#a1a1aa",
+              padding: "24px",
+              textAlign: "center",
+            }}
+          >
+            Cargando solicitudes...
+          </p>
+        ) : solicitudesQuery.isError ? (
+          <p
+            style={{
+              color: "#fca5a5",
+              padding: "24px",
+              textAlign: "center",
+            }}
+          >
+            No pudimos cargar las solicitudes.{" "}
+            {getErrorMessage(solicitudesQuery.error)}
+          </p>
+        ) : (
+          <table className="ipdj-solic-tabla">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Evento</th>
+                <th>Fecha deseada</th>
+                <th>Solicitado</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {solicitudesFiltradas.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="ipdj-solic-vacio">
+                    No hay solicitudes que coincidan con el filtro.
+                  </td>
+                </tr>
+              )}
+              {solicitudesFiltradas.map((s) => (
+                <tr
+                  key={s.id_solicitud}
+                  className={
+                    s.id_solicitud === seleccionId ? "seleccionada" : ""
+                  }
+                  onClick={() => {
+                    setSeleccionId(s.id_solicitud);
+                    setConfirmingReject(null);
+                  }}
+                >
+                  <td>
+                    <div className="ipdj-solic-cliente-cell">
+                      <span className="ipdj-solic-avatar">
+                        {nombreCompleto(s).charAt(0)}
+                      </span>
+                      <div>
+                        <div className="ipdj-solic-cliente-nombre">
+                          {nombreCompleto(s)}
+                        </div>
+                        <div className="ipdj-solic-cliente-email">
+                          {s.email_cliente ?? "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{s.tipo_evento}</td>
+                  <td>{formateaFecha(s.fecha_deseada)}</td>
+                  <td>{formateaFecha(s.created_at)}</td>
+                  <td>
+                    <EstadoBadge estado={s.estado} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {!solicitudesQuery.isLoading && !solicitudesQuery.isError && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 4px",
+              fontSize: "12px",
+              color: "#a1a1aa",
+            }}
+          >
+            <span>
+              Mostrando {solicitudes.length} de {total} solicitudes
+            </span>
+            <div style={{ display: "flex", gap: "6px" }}>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i + 1)}
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    border: "1px solid #3f3f46",
+                    background: page === i + 1 ? "#d4af37" : "transparent",
+                    color: page === i + 1 ? "#000" : "#a1a1aa",
+                    fontWeight: page === i + 1 ? 700 : 400,
+                    cursor: "pointer",
+                  }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            background: "#1e1e1e",
+            border: "1px solid rgba(201,168,76,0.3)",
+            color: "#fff",
+            padding: "12px 20px",
+            borderRadius: "10px",
+            fontSize: "13px",
+            zIndex: 1100,
+          }}
         >
-            {/* Estadísticas */}
-            <div className="ipdj-solic-stats">
-                <StatCard label="Total de solicitudes" valor={stats.total} />
-                <StatCard
-                    label="Pendientes"
-                    valor={stats.pendientes}
-                    destacado
-                />
-                <StatCard label="En revisión" valor={stats.enRevision} />
-                <StatCard label="Aceptadas" valor={stats.aceptadas} />
-            </div>
-
-            {/* Filtros */}
-            <div className="ipdj-solic-filtros">
-                <input
-                    type="text"
-                    className="ipdj-solic-buscador"
-                    placeholder="Buscar por cliente, tipo de evento o ubicación..."
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                />
-                <div className="ipdj-solic-chip-group">
-                    {(
-                        [
-                            "todas",
-                            "pendiente",
-                            "en_revision",
-                            "aceptada",
-                            "rechazada",
-                        ] as const
-                    ).map((opcion) => (
-                        <button
-                            key={opcion}
-                            className={
-                                "ipdj-solic-chip" +
-                                (filtroEstado === opcion ? " active" : "")
-                            }
-                            onClick={() => setFiltroEstado(opcion)}
-                        >
-                            {opcion === "todas"
-                                ? "Todas"
-                                : ESTADO_LABEL[opcion]}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Tabla */}
-            <div className="ipdj-solic-tabla-wrap">
-                <table className="ipdj-solic-tabla">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Evento</th>
-                            <th>Fecha deseada</th>
-                            <th>Solicitado</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {solicitudesFiltradas.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="ipdj-solic-vacio">
-                                    No hay solicitudes que coincidan con el
-                                    filtro.
-                                </td>
-                            </tr>
-                        )}
-                        {solicitudesFiltradas.map((s) => (
-                            <tr
-                                key={s.id}
-                                className={
-                                    s.id === seleccionId ? "seleccionada" : ""
-                                }
-                                onClick={() => setSeleccionId(s.id)}
-                            >
-                                <td>
-                                    <div className="ipdj-solic-cliente-cell">
-                                        <span className="ipdj-solic-avatar">
-                                            {s.clienteNombre.charAt(0)}
-                                        </span>
-                                        <div>
-                                            <div className="ipdj-solic-cliente-nombre">
-                                                {s.clienteNombre}
-                                            </div>
-                                            <div className="ipdj-solic-cliente-email">
-                                                {s.clienteEmail}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{s.tipoEvento}</td>
-                                <td>{formateaFecha(s.fechaDeseada)}</td>
-                                <td>{formateaFecha(s.fechaSolicitud)}</td>
-                                <td>
-                                    <EstadoBadge estado={s.estado} />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </AdminPageShell>
-    );
+          {toast}
+        </div>
+      )}
+    </AdminPageShell>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -301,129 +385,141 @@ export default function AdminSolicitudes() {
 /* ------------------------------------------------------------------ */
 
 function StatCard({
-    label,
-    valor,
-    destacado,
+  label,
+  valor,
+  destacado,
 }: {
-    label: string;
-    valor: string | number;
-    destacado?: boolean;
+  label: string;
+  valor: string | number;
+  destacado?: boolean;
 }) {
-    return (
-        <div className={"ipdj-stat-card" + (destacado ? " destacado" : "")}>
-            <span className="ipdj-stat-valor">{valor}</span>
-            <span className="ipdj-stat-label">{label}</span>
-        </div>
-    );
+  return (
+    <div className={"ipdj-stat-card" + (destacado ? " destacado" : "")}>
+      <span className="ipdj-stat-valor">{valor}</span>
+      <span className="ipdj-stat-label">{label}</span>
+    </div>
+  );
 }
 
 function EstadoBadge({ estado }: { estado: EstadoSolicitud }) {
-    return (
-        <span className={`ipdj-solic-badge estado-${estado}`}>
-            {ESTADO_LABEL[estado]}
-        </span>
-    );
+  return (
+    <span className={`ipdj-solic-badge estado-${estado}`}>
+      {ESTADO_LABEL[estado]}
+    </span>
+  );
 }
 
 function PanelDetalleSolicitud({
-    solicitud,
-    onEnRevision,
-    onAceptar,
-    onRechazar,
-    onCerrar,
+  solicitud,
+  onAprobar,
+  onRechazar,
+  onCompletar,
+  confirmandoRechazo,
+  cargando,
+  onCerrar,
 }: {
-    solicitud: Solicitud;
-    onEnRevision: () => void;
-    onAceptar: () => void;
-    onRechazar: () => void;
-    onCerrar: () => void;
+  solicitud: SolicitudEventoDTO;
+  onAprobar: () => void;
+  onRechazar: () => void;
+  onCompletar: () => void;
+  confirmandoRechazo: boolean;
+  cargando: boolean;
+  onCerrar: () => void;
 }) {
-    return (
-        <div className="ipdj-panel-solic">
-            <div className="ipdj-panel-solic-header">
-                <h2>Detalle de solicitud</h2>
-                <button className="ipdj-panel-cerrar" onClick={onCerrar}>
-                    ×
-                </button>
-            </div>
+  const nombre = nombreCompleto(solicitud);
 
-            <div className="ipdj-panel-solic-cliente">
-                <div className="ipdj-solic-avatar grande">
-                    {solicitud.clienteNombre.charAt(0)}
-                </div>
-                <div>
-                    <h3>{solicitud.clienteNombre}</h3>
-                    <span className="ipdj-panel-solic-contacto">
-                        {solicitud.clienteEmail}
-                    </span>
-                    <span className="ipdj-panel-solic-contacto">
-                        {solicitud.clienteTelefono}
-                    </span>
-                </div>
-            </div>
+  return (
+    <div className="ipdj-panel-solic">
+      <div className="ipdj-panel-solic-header">
+        <h2>Detalle de solicitud</h2>
+        <button className="ipdj-panel-cerrar" onClick={onCerrar}>
+          ×
+        </button>
+      </div>
 
-            <EstadoBadge estado={solicitud.estado} />
-
-            <dl className="ipdj-panel-solic-datos">
-                <div>
-                    <dt>Tipo de evento</dt>
-                    <dd>{solicitud.tipoEvento}</dd>
-                </div>
-                <div>
-                    <dt>Fecha deseada</dt>
-                    <dd>
-                        {formateaFecha(solicitud.fechaDeseada, {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                        })}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Ubicación</dt>
-                    <dd>{solicitud.ubicacion}</dd>
-                </div>
-            </dl>
-
-            <div className="ipdj-panel-solic-mensaje">
-                <span className="ipdj-panel-solic-mensaje-label">
-                    Mensaje del cliente
-                </span>
-                <p>{solicitud.mensaje}</p>
-            </div>
-
-            <span className="ipdj-panel-solic-fecha">
-                Enviada el{" "}
-                {formateaFecha(solicitud.fechaSolicitud, {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                })}
-            </span>
-
-            <div className="ipdj-panel-solic-acciones">
-                <button
-                    className="ipdj-btn-revision"
-                    onClick={onEnRevision}
-                    disabled={solicitud.estado === "en_revision"}
-                >
-                    En revisión
-                </button>
-                <button
-                    className="ipdj-btn-aprobar"
-                    onClick={onAceptar}
-                    disabled={solicitud.estado === "aceptada"}
-                >
-                    Aceptar
-                </button>
-                <button
-                    className="ipdj-btn-rechazar"
-                    onClick={onRechazar}
-                    disabled={solicitud.estado === "rechazada"}
-                >
-                    Rechazar
-                </button>
-            </div>
+      <div className="ipdj-panel-solic-cliente">
+        <div className="ipdj-solic-avatar grande">{nombre.charAt(0)}</div>
+        <div>
+          <h3>{nombre}</h3>
+          <span className="ipdj-panel-solic-contacto">
+            {solicitud.email_cliente ?? "Correo no disponible"}
+          </span>
         </div>
-    );
+      </div>
+
+      <EstadoBadge estado={solicitud.estado} />
+
+      <dl className="ipdj-panel-solic-datos">
+        <div>
+          <dt>Tipo de evento</dt>
+          <dd>{solicitud.tipo_evento}</dd>
+        </div>
+        <div>
+          <dt>Fecha deseada</dt>
+          <dd>
+            {formateaFecha(solicitud.fecha_deseada, {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </dd>
+        </div>
+        <div>
+          <dt>Dirección</dt>
+          <dd>{solicitud.direccion}</dd>
+        </div>
+      </dl>
+
+      <span className="ipdj-panel-solic-fecha">
+        Enviada el{" "}
+        {formateaFecha(solicitud.created_at, {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })}
+      </span>
+
+      <div className="ipdj-panel-solic-acciones">
+        {solicitud.estado === "pendiente" && (
+          <>
+            <button
+              className="ipdj-btn-aprobar"
+              onClick={onAprobar}
+              disabled={cargando}
+            >
+              Aprobar
+            </button>
+            <button
+              className="ipdj-btn-rechazar"
+              onClick={onRechazar}
+              disabled={cargando}
+            >
+              {confirmandoRechazo ? "¿Confirmar? Toca de nuevo" : "Rechazar"}
+            </button>
+          </>
+        )}
+        {solicitud.estado === "en_proceso" && (
+          <button
+            className="ipdj-btn-aprobar"
+            onClick={onCompletar}
+            disabled={cargando}
+          >
+            Completar
+          </button>
+        )}
+        {(solicitud.estado === "completada" ||
+          solicitud.estado === "rechazada") && (
+          <p
+            style={{
+              color: "#71717a",
+              fontSize: "12px",
+              textAlign: "center",
+            }}
+          >
+            Esta solicitud ya está en un estado final.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
