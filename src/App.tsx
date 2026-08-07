@@ -97,7 +97,13 @@ function App() {
                 <Route
                     path="/dashboard/admin/fotografias"
                     element={
-                        <RequireAdminAuth>
+                        <RequireAdminAuth
+                            allowedRoles={[
+                                "administrador",
+                                "superadministrador",
+                                "colaborador_fotografico",
+                            ]}
+                        >
                             <AdminPhotosGallery />
                         </RequireAdminAuth>
                     }

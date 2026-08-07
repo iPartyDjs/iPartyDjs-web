@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { FotografiaDTO, EstadoFotografia } from "@ipartydjs/shared";
 import {
     listFotografias,
+    listMisFotografias,
     uploadFotografia,
     editFotografiaMetadata,
     approveFotografia,
@@ -81,9 +82,32 @@ function resolveEstado(
     return estado && STATUS_LABELS[estado] ? estado : "pendiente";
 }
 
+function getUserRole(user: unknown): string | undefined {
+    if (!user || typeof user !== "object") return undefined;
+    const u = user as Record<string, unknown>;
+    if (typeof u.rol === "string") return u.rol;
+    if (
+        typeof u.rol_nombre === "string" &&
+        u.rol_nombre === "colaborador_fotografico"
+    ) {
+        return u.rol_nombre;
+    }
+    if (
+        typeof u.rol === "object" &&
+        u.rol !== null &&
+        "nombre" in u.rol &&
+        typeof (u.rol as Record<string, unknown>).nombre === "string"
+    ) {
+        return (u.rol as Record<string, unknown>).nombre as string;
+    }
+    return undefined;
+}
+
 export default function AdminPhotosGallery() {
     const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
+    const userRole = getUserRole(user);
+    const isFotografo = userRole === "colaborador_fotografico";
 
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [search, setSearch] = useState("");
@@ -120,20 +144,24 @@ export default function AdminPhotosGallery() {
     // Solo filtramos por estado en el backend (PhotoFiltersInput no acepta
     // búsqueda de texto libre) — el buscador de abajo filtra en el cliente
     // sobre este resultado.
+    const filterQuery =
+        statusFilter === "Todos" ? {} : { estado: statusFilter };
+
     const fotosQuery = useQuery({
-        queryKey: ["fotografias", statusFilter],
+        queryKey: ["fotografias", statusFilter, user?.id_usuario, isFotografo],
         queryFn: () =>
-            listFotografias(
-                statusFilter === "Todos" ? {} : { estado: statusFilter },
-            ),
+            isFotografo
+                ? listMisFotografias(filterQuery)
+                : listFotografias(filterQuery),
     });
 
     // Query aparte, siempre sin filtro, exclusiva para las tarjetas de stats —
     // así "Total/Aprobadas/Pendientes/Rechazadas" no se van a 0 cuando filtras
     // la tabla por un estado específico.
     const statsQuery = useQuery({
-        queryKey: ["fotografias", "Todos"],
-        queryFn: () => listFotografias({}),
+        queryKey: ["fotografias", "Todos", user?.id_usuario, isFotografo],
+        queryFn: () =>
+            isFotografo ? listMisFotografias({}) : listFotografias({}),
     });
 
     const photos = useMemo(() => fotosQuery.data ?? [], [fotosQuery.data]);
@@ -248,7 +276,7 @@ export default function AdminPhotosGallery() {
     }
 
     function handleDelete(id: string) {
-        if (user?.rol === "colaborador_fotografico") return;
+        if (isFotografo) return;
         if (confirmingDeleteId !== id) {
             setConfirmingDeleteId(id);
             return;
@@ -264,7 +292,6 @@ export default function AdminPhotosGallery() {
     // Esto NO sustituye la validación de rol en el backend — el endpoint
     // deleteFotografia debe rechazar la petición igualmente si llega sin
     // pasar por este botón.
-    const isFotografo = user?.rol === "colaborador_fotografico";
 
     const mainContent = (
         <>
@@ -568,7 +595,7 @@ export default function AdminPhotosGallery() {
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {resolveEstado(p.estado) ===
-                                            "pendiente" ? (
+                                                "pendiente" && !isFotografo ? (
                                                 <div
                                                     style={{
                                                         display: "flex",
@@ -662,35 +689,36 @@ export default function AdminPhotosGallery() {
                                 >
                                     {STATUS_LABELS[resolveEstado(p.estado)]}
                                 </span>
-                                {resolveEstado(p.estado) === "pendiente" && (
-                                    <div
-                                        className="ipdj-photo-hover-actions"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button
-                                            className="quick-act approve"
-                                            title="Aprobar"
-                                            onClick={() =>
-                                                approveMutation.mutate(
-                                                    p.id_fotografia,
-                                                )
-                                            }
+                                {resolveEstado(p.estado) === "pendiente" &&
+                                    !isFotografo && (
+                                        <div
+                                            className="ipdj-photo-hover-actions"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
-                                            ✓
-                                        </button>
-                                        <button
-                                            className="quick-act reject"
-                                            title="Rechazar"
-                                            onClick={() =>
-                                                rejectMutation.mutate(
-                                                    p.id_fotografia,
-                                                )
-                                            }
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                )}
+                                            <button
+                                                className="quick-act approve"
+                                                title="Aprobar"
+                                                onClick={() =>
+                                                    approveMutation.mutate(
+                                                        p.id_fotografia,
+                                                    )
+                                                }
+                                            >
+                                                ✓
+                                            </button>
+                                            <button
+                                                className="quick-act reject"
+                                                title="Rechazar"
+                                                onClick={() =>
+                                                    rejectMutation.mutate(
+                                                        p.id_fotografia,
+                                                    )
+                                                }
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    )}
                             </div>
                             <div className="ipdj-photo-info">
                                 <div className="photo-title">{p.titulo}</div>

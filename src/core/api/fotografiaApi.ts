@@ -21,6 +21,18 @@ export const listFotografias = async (
   return unwrap(response);
 };
 
+export const listMisFotografias = async (
+  filters: Omit<PhotoFiltersInput, "id_fotografo">,
+): Promise<FotografiaDTO[]> => {
+  const query = new URLSearchParams();
+  if (filters.estado) query.append("estado", filters.estado);
+
+  const response = await apiClient.get<ApiResponse<FotografiaDTO[]>>(
+    `/fotografias/mias?${query.toString()}`,
+  );
+  return unwrap(response);
+};
+
 export const getFotografiaById = async (id: string): Promise<FotografiaDTO> => {
   const response = await apiClient.get<ApiResponse<FotografiaDTO>>(
     `/fotografias/${id}`,
