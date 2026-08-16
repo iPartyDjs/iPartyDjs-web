@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import { useContact } from "@/core/hooks/useContact";
 import type { CreateContactInput } from "@ipartydjs/shared";
-import { Input } from "@/shared/ui";
+import { ButtonForm, Input, Textarea, DecorativeShape } from "@/shared/ui";
 
 const inputClasses =
     "w-full border border-white/8 bg-surface-1 px-4 py-3.5 font-body text-[0.78rem] font-light text-cream placeholder:text-cream/25 outline-none transition-colors duration-300 focus:border-gold focus:bg-surface-2";
@@ -64,14 +64,14 @@ const Contact = () => {
             ref={sectionRef}
             className="relative overflow-hidden bg-surface px-6 py-24 lg:px-15 lg:py-35"
         >
-            {/* Glow decorativo, igual al ::before del .contact original */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-50 -left-50 size-175 rounded-full"
-                style={{
-                    background:
-                        "radial-gradient(circle, rgba(var(--color-primary-rgb),0.05) 0%, transparent 70%)",
-                }}
+            {/* Glow decorativo, usando componente reutilizable */}
+            <DecorativeShape
+                kind="glow"
+                className="pointer-events-none absolute -bottom-50 -left-50 size-175"
+                innerClassName="rounded-full"
+                background={
+                    "radial-gradient(circle, rgba(var(--color-primary-rgb),0.05) 0%, transparent 70%)"
+                }
             />
 
             <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-start gap-15 lg:grid-cols-[1fr_1.4fr]">
@@ -256,16 +256,11 @@ const Contact = () => {
 
                             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="fecha"
-                                        className={labelClasses}
-                                    >
-                                        Fecha tentativa del evento
-                                    </label>
-                                    <input
-                                        id="fecha"
+                                    <Input
+                                        label="Fecha tentativa del evento"
                                         name="fecha_deseada"
                                         type="date"
+                                        defaultValue={""}
                                         value={
                                             form.fecha_deseada
                                                 ? new Date(form.fecha_deseada)
@@ -274,10 +269,6 @@ const Contact = () => {
                                                 : ""
                                         }
                                         onChange={handleChange}
-                                        className={clsx(
-                                            inputClasses,
-                                            "scheme-dark [&::-webkit-calendar-picker-indicator]:brightness-125 [&::-webkit-calendar-picker-indicator]:sepia [&::-webkit-calendar-picker-indicator]:saturate-200 [&::-webkit-calendar-picker-indicator]:hue-rotate-5",
-                                        )}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
@@ -294,23 +285,13 @@ const Contact = () => {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="mensaje"
-                                    className={labelClasses}
-                                >
-                                    Cuéntanos sobre tu evento
-                                </label>
-                                <textarea
-                                    id="mensaje"
+                                <Textarea
+                                    label="Cuéntanos sobre tu evento"
                                     name="mensaje"
                                     rows={4}
                                     placeholder="Describe tu visión, número de invitados, servicios que te interesan..."
                                     value={form.mensaje}
                                     onChange={handleChange}
-                                    className={clsx(
-                                        inputClasses,
-                                        "resize-none",
-                                    )}
                                 />
                             </div>
 
@@ -322,24 +303,9 @@ const Contact = () => {
                             )}
 
                             {/* Botón con barrido de relleno al hover (::before del original) */}
-                            <button
-                                type="submit"
-                                disabled={isPending}
-                                className="group relative flex items-center justify-between overflow-hidden border border-gold px-7 py-4.5 font-body text-[0.65rem] font-semibold tracking-[0.25em] text-gold uppercase transition-colors duration-300 hover:text-surface disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                <span
-                                    aria-hidden
-                                    className="absolute inset-0 -translate-x-full bg-gold transition-transform duration-400 ease-out group-hover:translate-x-0"
-                                />
-                                <span className="relative z-10">
-                                    {isPending
-                                        ? "Enviando..."
-                                        : "Enviar Solicitud"}
-                                </span>
-                                <span className="relative z-10 text-base transition-transform duration-300 group-hover:translate-x-1.5">
-                                    →
-                                </span>
-                            </button>
+                            <ButtonForm type="submit" disabled={isPending}>
+                                {isPending ? "Enviando..." : "Enviar Solicitud"}
+                            </ButtonForm>
                         </form>
                     )}
                 </div>

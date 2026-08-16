@@ -8,6 +8,8 @@ const button = cva(
         variants: {
             variant: {
                 gold: "bg-gold text-surface! hover:bg-gold-light",
+                contact:
+                    "group relative flex items-center justify-between overflow-hidden border border-gold px-7 py-4.5 font-body text-[0.65rem] font-semibold tracking-[0.25em] text-gold uppercase transition-colors duration-300 hover:text-surface disabled:cursor-not-allowed disabled:opacity-60",
                 outline:
                     "border border-gold text-gold hover:bg-gold hover:text-surface!",
                 ghost: "text-cream hover:text-gold",

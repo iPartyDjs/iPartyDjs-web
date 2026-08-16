@@ -24,11 +24,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         labelClassName,
         id,
         className,
+        type,
         ...props
     },
     ref,
 ) {
-    const resolvedId = id ?? props.name;
+    const resolvedId = id ?? (props as any).name;
+
+    // Add specialized styling for date inputs (calendar picker indicator tweaks)
+    const dateExtra =
+        type === "date"
+            ? "scheme-dark [&::-webkit-calendar-picker-indicator]:brightness-125 [&::-webkit-calendar-picker-indicator]:sepia [&::-webkit-calendar-picker-indicator]:saturate-200 [&::-webkit-calendar-picker-indicator]:hue-rotate-5"
+            : undefined;
 
     return (
         <div className={cn("flex flex-col gap-2", containerClassName)}>
@@ -44,13 +51,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             <input
                 id={resolvedId}
                 ref={ref}
+                type={type}
                 className={cn(
                     inputClasses,
+                    dateExtra,
                     error && "border-danger focus:border-danger",
                     className,
                 )}
-                aria-invalid={Boolean(error) || props["aria-invalid"]}
-                {...props}
+                aria-invalid={Boolean(error) || (props as any)["aria-invalid"]}
+                {...(props as any)}
             />
 
             {error ? (
@@ -79,12 +88,10 @@ export function InputExample() {
             />
 
             <Input
-                label="Correo electrónico"
-                name="email"
-                type="email"
-                placeholder="tu@correo.com"
-                defaultValue=""
-                required
+                label="Fecha tentativa"
+                name="fecha_deseada"
+                type="date"
+                defaultValue={""}
             />
 
             <button
