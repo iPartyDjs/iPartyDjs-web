@@ -1,109 +1,80 @@
-import { useEffect, useRef } from "react";
+import { Button, DecorativeShape } from "@/shared/ui";
 
-const particles = Array.from({ length: 20 }).map(() => ({
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    animationDelay: Math.random() * 6,
-    animationDuration: 4 + Math.random() * 6,
-    width: 1 + Math.random() * 2,
-    height: 1 + Math.random() * 2,
-}));
-
-const Hero = () => {
-    const titleRef = useRef<HTMLHeadingElement>(null);
-    const subtitleRef = useRef<HTMLParagraphElement>(null);
-    const ctaRef = useRef<HTMLDivElement>(null);
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const els = [
-            titleRef.current,
-            subtitleRef.current,
-            ctaRef.current,
-            scrollRef.current,
-        ];
-        els.forEach((el, i) => {
-            if (!el) return;
-            el.style.opacity = "0";
-            el.style.transform = "translateY(40px)";
-            setTimeout(
-                () => {
-                    if (!el) return;
-                    el.style.transition = `opacity 1.2s ease, transform 1.2s ease`;
-                    el.style.opacity = "1";
-                    el.style.transform = "translateY(0)";
-                },
-                400 + i * 200,
-            );
-        });
-    }, []);
-
+export default function Hero() {
     return (
-        <section id="inicio" className="hero">
-            <div className="hero-bg">
-                <div className="hero-gradient" />
-                <div className="hero-grid" />
-                <div className="hero-particles">
-                    {particles.map((particle, i) => (
-                        <div
-                            key={i}
-                            className="particle"
-                            style={{
-                                left: `${particle.left}%`,
-                                top: `${particle.top}%`,
-                                animationDelay: `${particle.animationDelay}s`,
-                                animationDuration: `${particle.animationDuration}s`,
-                                width: `${particle.width}px`,
-                                height: `${particle.height}px`,
-                            }}
-                        />
-                    ))}
+        <section
+            id="inicio"
+            className="relative isolate overflow-hidden bg-surface px-6 pt-14 lg:px-8"
+        >
+            {/* Blob decorativo superior */}
+            <DecorativeShape
+                kind="blob"
+                className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+                innerClassName="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-gold-dark to-gold opacity-20 sm:left-[calc(50%-30rem)] sm:w-288.75"
+            />
+
+            <div className="mx-auto max-w-3xl py-32 sm:py-48 lg:py-56">
+                {/* Overline */}
+                <div className="mb-8 flex justify-center">
+                    <div className="flex items-center gap-4 text-gold text-xs tracking-[0.3em] uppercase">
+                        <span className="h-px w-8 bg-gold/50" />
+                        Producción &amp; Coordinación de Eventos
+                        <span className="h-px w-8 bg-gold/50" />
+                    </div>
+                </div>
+
+                <div className="text-center">
+                    <h1 className="font-display text-5xl font-normal text-balance text-cream sm:text-7xl">
+                        Creamos{" "}
+                        <em className="italic text-cream-dim">experiencias</em>
+                        <br className="hidden sm:block" /> que se convierten en{" "}
+                        <span className="text-gold not-italic">
+                            memorias eternas.
+                        </span>
+                    </h1>
+
+                    <p className="mt-8 font-body text-sm text-pretty text-cream-dim sm:text-base">
+                        Bodas · XV Años · Cumpleaños · Eventos Empresariales
+                        <br />
+                        Dirección musical, diseño sonoro y visual de clase
+                        mundial.
+                    </p>
+
+                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <Button href="/#contacto" size="lg">
+                            Cotiza tu Evento
+                        </Button>
+                        <Button href="/#galeria" variant="outline" size="lg">
+                            Ver Galería
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            <div className="hero-content">
-                <div className="hero-eyebrow">
-                    <span className="eyebrow-line" />
-                    <span className="eyebrow-text">
-                        Producción & Coordinación de Eventos
-                    </span>
-                    <span className="eyebrow-line" />
-                </div>
-
-                <h1 ref={titleRef} className="hero-title">
-                    Creamos <em>experiencias</em>
-                    <br />
-                    que se convierten en
-                    <br />
-                    <span className="title-gold">memorias eternas.</span>
-                </h1>
-
-                <p ref={subtitleRef} className="hero-subtitle">
-                    Bodas · XV Años · Cumpleaños · Eventos Empresariales
-                    <br />
-                    Dirección musical, diseño sonoro y visual de clase mundial.
-                </p>
-
-                <div ref={ctaRef} className="hero-cta">
-                    <a href="#contacto" className="btn-primary">
-                        Cotiza tu Evento
-                    </a>
-                    <a href="#galeria" className="btn-outline">
-                        Ver Galería
-                    </a>
-                </div>
+            {/* Indicador de scroll */}
+            <div className="absolute bottom-10 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.65rem] tracking-[0.3em] text-gold uppercase sm:flex">
+                <span className="h-10 w-px bg-gold/40" />
+                Scroll
             </div>
 
-            <div ref={scrollRef} className="scroll-indicator">
-                <div className="scroll-line" />
-                <span className="scroll-text">SCROLL</span>
+            {/* Ubicación */}
+            <div className="absolute bottom-10 right-6 hidden text-[0.65rem] tracking-[0.3em] text-cream-dim uppercase sm:block lg:right-8">
+                Morelos · MX
             </div>
 
-            <div className="hero-badge">
-                <span>MORELOS · MX</span>
+            {/* Blob decorativo inferior */}
+            <div
+                aria-hidden="true"
+                className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+            >
+                <div
+                    style={{
+                        clipPath:
+                            "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+                    }}
+                    className="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-gold-dark to-gold opacity-20 sm:left-[calc(50%+36rem)] sm:w-288.75"
+                />
             </div>
         </section>
     );
-};
-
-export default Hero;
+}

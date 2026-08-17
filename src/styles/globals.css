@@ -51,6 +51,10 @@
         margin: 0;
         padding: 0;
     }
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
 }
 
 html,
@@ -66,11 +70,6 @@ body {
 
 body.public-cursor {
     cursor: none;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
 }
 
 ::selection {
@@ -146,6 +145,18 @@ a {
         transform: scale(0.96);
     }
     to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ringPulse {
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    50% {
         opacity: 1;
         transform: scale(1);
     }

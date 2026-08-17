@@ -1,109 +1,189 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import clsx from "clsx";
+import { Button, NavLink } from "@/shared/ui";
+
+const navLinks = [
+    { label: "Inicio", sub: "Empieza aquí", href: "/#inicio" },
+    { label: "Servicios", sub: "Lo que hacemos", href: "/#servicios" },
+    { label: "Proceso", sub: "Cómo trabajamos", href: "/#proceso" },
+    { label: "Galería", sub: "Nuestros eventos", href: "/#galeria" },
+    { label: "Contacto", sub: "Hablemos", href: "/#contacto" },
+];
+
+type MobileMenuProps = {
+    open: boolean;
+    onClose: () => void;
+};
+
+// Se monta vía Portal directo en document.body: así escapa del <header>
+// (que usa backdrop-blur al hacer scroll). backdrop-filter crea un nuevo
+// "containing block" para descendientes con position:fixed, lo que
+// confinaba este panel a la altura del navbar en vez de la pantalla completa.
+const MobileMenu = ({ open, onClose }: MobileMenuProps) => {
+    return createPortal(
+        <div
+            className={clsx(
+                "fixed inset-0 z-100 lg:hidden",
+                open ? "pointer-events-auto" : "pointer-events-none",
+            )}
+        >
+            {/* Backdrop */}
+            <div
+                onClick={onClose}
+                className={clsx(
+                    "fixed inset-0 bg-black/60 transition-opacity duration-300",
+                    open ? "opacity-100" : "opacity-0",
+                )}
+            />
+
+            {/* Panel */}
+            <div
+                className={clsx(
+                    "fixed inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-surface-1 px-6 py-6 ring-1 ring-gold/10 transition-transform duration-300",
+                    open ? "translate-x-0" : "translate-x-full",
+                )}
+            >
+                <div className="flex items-center justify-between">
+                    <a href="/" className="font-display text-xl font-semibold">
+                        <span className="text-cream">iParty</span>
+                        <span className="text-gold">DJs</span>
+                    </a>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="-m-2.5 rounded-md p-2.5"
+                    >
+                        <span className="sr-only">Cerrar menú</span>
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            aria-hidden="true"
+                            className="size-6 text-cream"
+                        >
+                            <path
+                                d="M6 18 18 6M6 6l12 12"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                <div className="mt-10 flex flex-col gap-1">
+                    {navLinks.map((link) => (
+                        <NavLink
+                            key={link.label}
+                            mobile={true}
+                            onClick={onClose}
+                            {...link}
+                        />
+                    ))}
+                </div>
+
+                <div className="mt-8">
+                    <Button
+                        href="/#contacto"
+                        size="sm"
+                        className="w-full"
+                        onClick={onClose}
+                    >
+                        Cotizar Evento
+                    </Button>
+                </div>
+            </div>
+        </div>,
+        document.body,
+    );
+};
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
-        const onScroll = () => {
-            setScrolled(document.body.scrollTop > 60);
-        };
+        const onScroll = () => setScrolled(document.body.scrollTop > 60);
         document.body.addEventListener("scroll", onScroll);
         return () => document.body.removeEventListener("scroll", onScroll);
     }, []);
 
-    const navLinks = [
-        { label: "Inicio", sub: "Empieza aquí", href: "/#inicio" },
-        { label: "Servicios", sub: "Lo que hacemos", href: "/#servicios" },
-        { label: "Proceso", sub: "Cómo trabajamos", href: "/#proceso" },
-        { label: "Galería", sub: "Nuestros eventos", href: "/#galeria" },
-        { label: "Contacto", sub: "Hablemos", href: "/#contacto" },
-    ];
+    // Bloquea el scroll del body mientras el menú móvil está abierto
+    useEffect(() => {
+        document.body.style.overflow = menuOpen ? "hidden" : "";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [menuOpen]);
 
     return (
         <>
-            <nav
-                className={`fixed top-0 left-0 right-0 z-1000 flex items-center justify-between px-6 md:px-15 transition-all duration-500 ${
+            <header
+                className={clsx(
+                    "fixed inset-x-0 top-0 z-50 transition-all duration-500",
                     scrolled
-                        ? "py-3.5 md:py-4 bg-surface/50 backdrop-blur-3xl border-b border-gold/15"
-                        : "py-5 md:py-7"
-                }`}
+                        ? "bg-surface/70 backdrop-blur-xl border-b border-gold/15"
+                        : "bg-transparent",
+                )}
             >
-                {/* Logo */}
-                <a
-                    href="/"
-                    className="z-1001 font-display text-[1.8rem] font-semibold tracking-wide"
+                <nav
+                    aria-label="Global"
+                    className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8"
                 >
-                    <span className="text-cream">iParty</span>
-                    <span className="text-gold">DJs</span>
-                </a>
-
-                {/* Links */}
-                <div
-                    className={`flex items-center gap-9 md:gap-12 fixed md:static top-0 -right-full md:right-auto w-70 md:w-auto h-screen md:h-auto bg-surface-1 md:bg-transparent border-l border-gold/20 md:border-none flex-col md:flex-row justify-center px-10 py-16 md:p-0 transition-[right] duration-400 z-999 ${
-                        menuOpen ? "right-0!" : ""
-                    }`}
-                >
-                    {navLinks.map((link) => (
+                    {/* Logo */}
+                    <div className="flex lg:flex-1">
                         <a
-                            key={link.label}
-                            href={link.href}
-                            onClick={() => setMenuOpen(false)}
-                            className="group relative flex flex-col items-center gap-0.5"
+                            href="/"
+                            className="font-display text-[1.8rem] font-semibold tracking-wide"
                         >
-                            <span className="font-body text-[0.85rem] md:text-[0.72rem] font-medium tracking-[0.15em] uppercase text-cream transition-colors duration-300 group-hover:text-gold">
-                                {link.label}
-                            </span>
-                            <span className="font-display text-[0.65rem] italic text-gold opacity-0 -translate-y-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-                                {link.sub}
-                            </span>
-                            <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold transition-all duration-400 group-hover:w-full" />
+                            <span className="text-cream">iParty</span>
+                            <span className="text-gold">DJs</span>
                         </a>
-                    ))}
-                </div>
+                    </div>
 
-                {/* Right side */}
-                <div className="flex items-center gap-6 z-1001">
-                    <a
-                        href="/#contacto"
-                        className="inline-flex items-center justify-center px-5 h-10 text-sm text-surface font-semibold bg-linear-to-r from-gold-dark via-gold to-gold-dark rounded-lg shadow-lg hover:scale-105 duration-200 hover:drop-shadow-2xl hover:shadow-gold/50 transition-all"
-                    >
-                        Cotizar Evento
-                    </a>
+                    {/* Hamburger (mobile) */}
+                    <div className="flex lg:hidden">
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen(true)}
+                            className="-m-2.5 inline-flex items-center justify-center p-2.5"
+                        >
+                            <span className="sr-only">Abrir menú</span>
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                aria-hidden="true"
+                                className="size-6 text-cream"
+                            >
+                                <path
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </button>
+                    </div>
 
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="hidden max-md:flex flex-col gap-1.25 p-1"
-                    >
-                        <span
-                            className={`block w-6 h-px bg-cream transition-all duration-300 origin-center ${
-                                menuOpen
-                                    ? "translate-y-1.5 rotate-45 bg-gold"
-                                    : ""
-                            }`}
-                        />
-                        <span
-                            className={`block w-6 h-px bg-cream transition-all duration-300 origin-center ${
-                                menuOpen ? "opacity-0" : ""
-                            }`}
-                        />
-                        <span
-                            className={`block w-6 h-px bg-cream transition-all duration-300 origin-center ${
-                                menuOpen
-                                    ? "-translate-y-1.5 -rotate-45 bg-gold"
-                                    : ""
-                            }`}
-                        />
-                    </button>
-                </div>
-            </nav>
+                    {/* Links (desktop) */}
+                    <div className="hidden lg:flex lg:gap-x-12">
+                        {navLinks.map((link) => (
+                            <NavLink key={link.label} {...link} />
+                        ))}
+                    </div>
 
-            {menuOpen && (
-                <div
-                    onClick={() => setMenuOpen(false)}
-                    className="fixed inset-0 bg-black/50 z-998"
-                />
-            )}
+                    {/* Botón (desktop) */}
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        <Button href="/#contacto" size="sm">
+                            Cotizar Evento
+                        </Button>
+                    </div>
+                </nav>
+            </header>
+
+            <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
         </>
     );
 };
