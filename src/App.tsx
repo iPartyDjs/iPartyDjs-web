@@ -41,7 +41,6 @@ function App() {
     return (
         <>
             <GlobalCursor />
-
             <Routes>
                 {/* Rutas públicas */}
                 <Route element={<GuestLayout />}>
