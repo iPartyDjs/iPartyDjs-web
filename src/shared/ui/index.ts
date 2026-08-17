@@ -13,4 +13,6 @@ export {
 } from "./Input";
 export { default as Select, SelectExample } from "./Select";
 export { default as Textarea, TextareaExample } from "./Textarea";
+export { default as SectionHeader } from "./SectionHeader";
+export { default as MasonryGrid } from "./MasonryGrid";
 export { cn } from "./cn";

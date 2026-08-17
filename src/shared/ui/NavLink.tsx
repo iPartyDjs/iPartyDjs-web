@@ -2,11 +2,27 @@ type NavLinkProps = {
     href: string;
     label: string;
     sub: string;
+    mobile?: boolean;
     onClick?: () => void;
 };
 
-export default function NavLink({ href, label, sub, onClick }: NavLinkProps) {
-    return (
+export default function NavLink({
+    href,
+    label,
+    sub,
+    mobile,
+    onClick,
+}: NavLinkProps) {
+    return mobile ? (
+        <a
+            key={label}
+            href={href}
+            onClick={onClick}
+            className="-mx-3 block rounded-lg px-3 py-3 font-body text-base font-semibold tracking-wide uppercase text-cream hover:bg-gold/10 hover:text-gold"
+        >
+            {label}
+        </a>
+    ) : (
         <a
             href={href}
             onClick={onClick}

@@ -74,14 +74,12 @@ const MobileMenu = ({ open, onClose }: MobileMenuProps) => {
 
                 <div className="mt-10 flex flex-col gap-1">
                     {navLinks.map((link) => (
-                        <a
+                        <NavLink
                             key={link.label}
-                            href={link.href}
+                            mobile={true}
                             onClick={onClose}
-                            className="-mx-3 block rounded-lg px-3 py-3 font-body text-base font-semibold tracking-wide uppercase text-cream hover:bg-gold/10 hover:text-gold"
-                        >
-                            {link.label}
-                        </a>
+                            {...link}
+                        />
                     ))}
                 </div>
 
