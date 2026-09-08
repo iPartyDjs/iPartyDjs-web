@@ -4,7 +4,6 @@ import GuestLayout from "@/layouts/GuestLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
 import Home from "@/features/public/pages/Home";
-import HomeV2 from "@/features/public/pages/HomeV2";
 import Login from "@/features/auth/pages/Login";
 import Register from "@/features/auth/pages/Register";
 import { ClientDashboard } from "@/features/cliente/pages/ClientDashboard";
@@ -45,8 +44,7 @@ function App() {
             <Routes>
                 {/* Rutas públicas */}
                 <Route element={<GuestLayout />}>
-                    <Route path="/" element={<HomeV2 />} />
-                    <Route path="/legacy" element={<Home />} />
+                    <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/registro" element={<Register />} />
