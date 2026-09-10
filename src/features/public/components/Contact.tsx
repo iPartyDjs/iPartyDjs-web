@@ -2,7 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import { useContact } from "@/core/hooks/useContact";
 import type { CreateContactInput } from "@ipartydjs/shared";
-import { ButtonForm, Input, Textarea, DecorativeShape } from "@/shared/ui";
+import {
+    ButtonForm,
+    Input,
+    Textarea,
+    DecorativeShape,
+    Button,
+} from "@/shared/ui";
 
 const inputClasses =
     "w-full border border-white/8 bg-surface-1 px-4 py-3.5 font-body text-[0.78rem] font-light text-cream placeholder:text-cream/25 outline-none transition-colors duration-300 focus:border-gold focus:bg-surface-2";
@@ -308,6 +314,15 @@ const Contact = () => {
                             </ButtonForm>
                         </form>
                     )}
+
+                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <Button href="/login">
+                            Ya eres cliente? <small>Ingresa a tu perfil</small>
+                        </Button>
+                        <Button href="/register" variant="outline">
+                            O Registrate para ser cliente
+                        </Button>
+                    </div>
                 </div>
             </div>
         </section>

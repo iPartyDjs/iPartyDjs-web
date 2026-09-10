@@ -1,4 +1,5 @@
 import { Button, DecorativeShape } from "@/shared/ui";
+import Overline from "@/shared/ui/Overline";
 
 export default function Hero() {
     return (
@@ -16,11 +17,9 @@ export default function Hero() {
             <div className="mx-auto max-w-3xl py-32 sm:py-48 lg:py-56">
                 {/* Overline */}
                 <div className="mb-8 flex justify-center">
-                    <div className="flex items-center gap-4 text-gold text-xs tracking-[0.3em] uppercase">
-                        <span className="h-px w-8 bg-gold/50" />
-                        Producción &amp; Coordinación de Eventos
-                        <span className="h-px w-8 bg-gold/50" />
-                    </div>
+                    <Overline
+                        children={"Producción & Coordinación de Eventos"}
+                    />
                 </div>
 
                 <div className="text-center">
@@ -72,7 +71,7 @@ export default function Hero() {
                         clipPath:
                             "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
                     }}
-                    className="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-gold-dark to-gold opacity-20 sm:left-[calc(50%+36rem)] sm:w-288.75"
+                    className="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-gold-dark to-gold opacity-25 sm:left-[calc(50%+36rem)] sm:w-288.75"
                 />
             </div>
         </section>

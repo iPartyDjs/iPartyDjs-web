@@ -14,12 +14,16 @@ const items = [
 ];
 
 const Marquee = () => (
-    <div className="marquee-wrapper">
-        <div className="marquee-track">
+    <div className="group overflow-hidden whitespace-nowrap bg-gold py-3.5">
+        <div className="inline-flex animate-marquee-scroll gap-8 group-hover:[animation-play-state:paused]">
             {[...items, ...items].map((item, i) => (
                 <span
                     key={i}
-                    className={item === "✦" ? "marquee-dot" : "marquee-item"}
+                    className={
+                        item === "✦"
+                            ? "text-[0.5rem] text-surface"
+                            : "font-semibold text-[0.6rem] uppercase tracking-[0.3em] text-surface"
+                    }
                 >
                     {item}
                 </span>

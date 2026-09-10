@@ -3,8 +3,10 @@ import {
     RegisterClientSchema,
     type RegisterClientInput,
 } from "@ipartydjs/shared";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useRegister } from "@/features/auth/hooks/useAuth";
+import Overline from "@/shared/ui/Overline";
+import { Button, ButtonForm, Input } from "@/shared/ui";
 
 type PasswordStrength = "weak" | "medium" | "strong" | "";
 
@@ -113,17 +115,24 @@ const Register = () => {
     };
 
     return (
-        <div className="register-page">
-            <div className="register-card">
+        <section className="relative isolate overflow-hidden bg-surface px-6 pt-14 lg:px-8">
+            <div className="mx-auto max-w-3xl py-32 sm:py-48 lg:py-56">
                 {/* Header */}
-                <div className="register-header">
-                    <span className="register-eyebrow">NUEVO USUARIO</span>
-                    <h1 className="register-title">Crear cuenta</h1>
-                    <p className="register-subtitle">
+                <div className="text-center">
+                    <div className="mb-8 flex justify-center">
+                        <Overline children={"Se parte de nosotros"} />
+                    </div>
+
+                    <h1 className="font-display text-3xl font-medium text-balance text-cream sm:text-5xl">
+                        Registrate y crea una cuenta
+                    </h1>
+                    <p className="mt-8 font-body text-sm text-pretty text-cream-dim sm:text-base">
                         Regístrate para solicitar y dar seguimiento a tus
                         eventos.
                     </p>
                 </div>
+
+                <br />
 
                 {/* Form */}
                 <form
@@ -133,93 +142,65 @@ const Register = () => {
                 >
                     {/* Row 1 - Nombre y Apellido */}
                     <div className="form-row">
-                        <div
-                            className={`field ${showError("nombre") ? "has-error" : ""}`}
-                        >
-                            <label htmlFor="nombre">
-                                Nombre <span className="required">*</span>
-                            </label>
-                            <input
-                                id="nombre"
-                                name="nombre"
-                                type="text"
-                                placeholder="María"
-                                value={form.nombre}
-                                onChange={handleChange}
-                                onBlur={() => handleBlur("nombre")}
-                                disabled={registerMutation.isPending}
-                            />
-                            {showError("nombre") && (
-                                <span className="error-msg">
-                                    {errors.nombre}
-                                </span>
-                            )}
-                        </div>
-
-                        <div
-                            className={`field ${showError("apellido") ? "has-error" : ""}`}
-                        >
-                            <label htmlFor="apellido">
-                                Apellido <span className="required">*</span>
-                            </label>
-                            <input
-                                id="apellido"
-                                name="apellido"
-                                type="text"
-                                placeholder="González"
-                                value={form.apellido}
-                                onChange={handleChange}
-                                onBlur={() => handleBlur("apellido")}
-                                disabled={registerMutation.isPending}
-                            />
-                            {showError("apellido") && (
-                                <span className="error-msg">
-                                    {errors.apellido}
-                                </span>
-                            )}
-                        </div>
+                        <Input
+                            label="Nombre"
+                            name="nombre"
+                            type="text"
+                            placeholder="Tu nombre"
+                            value={form.nombre}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur("nombre")}
+                            disabled={registerMutation.isPending}
+                            error={showError("nombre") ? errors.nombre : ""}
+                            required
+                        />
+                        <Input
+                            label="Apellidos"
+                            name="apellido"
+                            type="text"
+                            placeholder="Tus apellidos"
+                            value={form.apellido}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur("apellido")}
+                            disabled={registerMutation.isPending}
+                            error={showError("apellido") ? errors.apellido : ""}
+                            required
+                        />
                     </div>
 
                     {/* Correo */}
-                    <div
-                        className={`field ${showError("email") ? "has-error" : ""}`}
-                    >
-                        <label htmlFor="email">
-                            Correo electrónico{" "}
-                            <span className="required">*</span>
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="maria.gonzalez@gmail.com"
-                            value={form.email}
-                            onChange={handleChange}
-                            onBlur={() => handleBlur("email")}
-                            disabled={registerMutation.isPending}
-                        />
-                        {showError("email") && (
-                            <span className="error-msg">{errors.email}</span>
-                        )}
-                    </div>
+
+                    <Input
+                        label="Correo electrónico"
+                        name="email"
+                        type="text"
+                        placeholder="usuario@ejemplo.com"
+                        value={form.email}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur("email")}
+                        autoComplete="email"
+                        disabled={registerMutation.isPending}
+                        error={showError("email") ? errors.email : ""}
+                        required
+                    />
 
                     {/* Password */}
+                    <Input
+                        label="Contraseña"
+                        name="password"
+                        type="password"
+                        placeholder="Mínimo 8 caracteres"
+                        value={form.password}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur("password")}
+                        autoComplete="current-password"
+                        disabled={registerMutation.isPending}
+                        error={showError("password") ? errors.password : ""}
+                        required
+                    />
                     <div
                         className={`field ${showError("password") ? "has-error" : ""}`}
                     >
-                        <label htmlFor="password">
-                            Contraseña <span className="required">*</span>
-                        </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={form.password}
-                            onChange={handleChange}
-                            onBlur={() => handleBlur("password")}
-                            disabled={registerMutation.isPending}
-                        />
                         {form.password && (
                             <div className="strength-wrapper">
                                 <div className="strength-bar">
@@ -248,59 +229,66 @@ const Register = () => {
                     </div>
 
                     {/* Confirm password */}
-                    <div
-                        className={`field ${showError("confirmPassword") ? "has-error" : ""}`}
-                    >
-                        <label htmlFor="confirmPassword">
-                            Confirmar contraseña{" "}
-                            <span className="required">*</span>
-                        </label>
-                        <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            placeholder="Repite tu contraseña"
-                            value={form.confirmPassword}
-                            onChange={handleChange}
-                            onBlur={() => handleBlur("confirmPassword")}
-                            disabled={registerMutation.isPending}
-                        />
-                        {showError("confirmPassword") && (
-                            <span className="error-msg">
-                                {errors.confirmPassword}
-                            </span>
-                        )}
-                    </div>
+                    <Input
+                        label="Confirmar contraseña"
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Repite tu contraseña"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur("confirmPassword")}
+                        disabled={registerMutation.isPending}
+                        error={
+                            showError("confirmPassword")
+                                ? errors.confirmPassword
+                                : ""
+                        }
+                        required
+                    />
 
                     {/* Server error alert */}
                     {serverErrorMessage && (
-                        <div className="auth-error">
-                            <span className="auth-error-icon">!</span>
+                        <div className="flex items-center gap-3 border border-red-400/30 bg-red-500/10 px-3 py-4 text-sm text-red-200">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-400/20 text-xs font-bold text-red-100">
+                                !
+                            </span>
                             {serverErrorMessage}
                         </div>
                     )}
 
                     {/* Submit */}
-                    <button
+                    <ButtonForm
                         type="submit"
-                        className="btn-register"
                         disabled={registerMutation.isPending}
+                        className="w-full"
                     >
                         {registerMutation.isPending
                             ? "Creando cuenta..."
                             : "Crear mi cuenta"}
-                    </button>
+                    </ButtonForm>
 
                     {/* Login link */}
-                    <p className="login-link">
+                    <p className="mt-8 text-center text-cream/80">
                         ¿Ya tienes cuenta?{" "}
-                        <Link to="/login" className="link-gold">
+                        <Button href="/login" variant="outline">
                             Inicia sesión
-                        </Link>
+                        </Button>
                     </p>
                 </form>
             </div>
-        </div>
+            <div
+                aria-hidden="true"
+                className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+            >
+                <div
+                    style={{
+                        clipPath:
+                            "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+                    }}
+                    className="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-gold-dark to-gold opacity-25 sm:left-[calc(50%+36rem)] sm:w-288.75"
+                />
+            </div>
+        </section>
     );
 };
 

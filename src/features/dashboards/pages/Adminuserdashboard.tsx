@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterEmployeeSchema } from "@ipartydjs/shared";
-import AdminSidebar, { type AdminNavKey } from "./AdminSidebar";
+import AdminSidebar, {
+    type AdminNavKey,
+} from "@/features/auth/admin/AdminSidebar";
 import type { UsuarioDTO, RegisterEmployeeInput } from "@ipartydjs/shared";
 import {
     getUsers,
@@ -13,7 +15,7 @@ import {
     activateUser,
     deactivateUser,
     registerEmployee,
-} from "../../../core/api/userApi";
+} from "@/core/api/userApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type RolNombre =

@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-    --color-gold: #c9a84c;
-    --color-gold-light: #e8c97a;
+    --color-gold: #f9d142;
+    --color-gold-light: #f2aa4c;
     --color-gold-dark: #8b6914;
-    --color-surface: #080808;
+    --color-surface: #110e16;
     --color-surface-soft: #111111;
     --color-surface-1: #161616;
     --color-surface-2: #1e1e1e;
@@ -17,4 +17,19 @@
 
     --font-display: "Cormorant Garamond", serif;
     --font-body: "Montserrat", sans-serif;
+}
+
+@keyframes marquee-scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@layer utilities {
+    .animate-marquee-scroll {
+        animation: marquee-scroll 22s linear infinite;
+    }
 }
